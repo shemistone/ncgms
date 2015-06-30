@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <h:outputStylesheet library="css" name="cssLayout.css"/>
+        <h:outputStylesheet library="css" name="default.css"/>                
+        <title>
+            <ui:insert name="title">
+                Facelets Template
+            </ui:insert>
+        </title>
+    </h:head>
+
+    <h:body>
+        <div id="body">
+            <div id="top">
+                <ui:insert name="top">
+                    <a href="/ncgms/faces/log_in.xhtml">
+                        <h:graphicImage library="images" name="logo.png" 
+                                        style="margin: 0 2px -2px 0"/>
+                    </a>
+                    <h:form id="user_log_in_form" style="">
+                        <div style="float:left">
+                            <label for="username">Username: *</label><br />                            
+                            <h:inputText id="username" value="#{logInLogOutController.username}"/><br />
+                            <h:message for="username" errorClass="error" infoClass="info"/><br />
+                        </div>
+                        <div style="float: left">
+                            <label for="password" >Password: *</label><br />
+                            
+                            <h:inputSecret id="password" value="#{logInLogOutController.password}"/>
+                            <h:commandButton value="Log In" action="#{logInLogOutController.logIn}"
+                                             style="clear: both">
+                                <f:ajax event="action" execute="@form" render="@all"/>
+                            </h:commandButton><br />
+                            <h:message for="password" errorClass="error" infoClass="info"/>
+                        </div>
+
+                    </h:form>
+                </ui:insert>
+            </div>
+            <div style="clear: both;">
+                <div id="left">
+                    <ui:insert name="left">
+                        <h:form id="application_form">
+                            <h:commandLink action="#{ncgmsTemplateController.toClientApplication}">
+                                <h:graphicImage library="images" name="clients.png" 
+                                                style="margin: 0 2px -2px 0"/><br />
+                                Client Application
+                            </h:commandLink><br />
+                            <h:commandLink action="#{ncgmsTemplateController.toDriverApplication}" >
+                                <h:graphicImage library="images" name="driver.jpeg" 
+                                                style="margin: 0 2px -2px 0"/><br />
+                                Driver Application
+                            </h:commandLink><br />
+                            <h:commandLink action="#{ncgmsTemplateController.toToutApplication}" >
+                                <h:graphicImage library="images" name="tout.jpeg" 
+                                                style="margin: 0 2px -2px 0"/><br />
+                                Sanitation Worker<br />Application
+                            </h:commandLink>
+                        </h:form>
+
+                    </ui:insert>
+                </div>
+                <div id="content" class="center_content">
+                    <ui:insert name="content">
+                        Content
+                    </ui:insert>
+                </div>
+            </div>
+            <div id="bottom">
+                <ui:insert name="bottom">
+                    <ui:include src="/includes/footer.xhtml"/>
+                </ui:insert>
+            </div>
+        </div>
+    </h:body>
+
+</html>

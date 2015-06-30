@@ -1,0 +1,174 @@
+<ui:composition template="../layout/admin_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Drivers
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateLogisticsManager}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">
+        <!--Drivers Form-->
+        <h:form id="drivers_form">       
+            <h1>Drivers</h1>
+            
+            <h:outputText value="You have no Drivers" 
+                          rendered="#{adminDriverController.driverList.size() == 0}"/><br />
+
+            <h:outputLabel for="search" value="Search by:" rendered="#{adminDriverController.driverList.size() != 0}"/>
+            <h:selectOneMenu id="search" value="#{adminDriverController.searchBy}" rendered="#{adminDriverController.driverList.size() != 0}">
+                <f:selectItems value="#{adminDriverController.searchByArray}"/>
+            </h:selectOneMenu>
+            <h:inputText value="#{adminDriverController.searchTerm}" rendered="#{adminDriverController.driverList.size() != 0}"/>
+            <h:commandLink action="#{adminDriverController.searchDrivers}" id="search_button" rendered="#{adminDriverController.driverList.size() != 0}">
+                <h:graphicImage library="icons" name="search.png" style="margin: 0 2px -2px 0"/>Search
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:message for="search_button" errorClass="error" infoClass="info"/><br />
+            
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"/>            
+            
+            <h:outputText class="pages" value="Page #{adminDriverController.currentPage} of #{adminDriverController.noOfPages}"
+                          rendered="#{adminDriverController.driverList.size() != 0}"/>
+
+            <h:commandLink action="#{adminDriverController.previousDriverPage}" 
+                           rendered="#{adminDriverController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminDriverController.nextDriverPage}" 
+                           rendered="#{adminDriverController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminDriverController.refreshDrivers}" 
+                           rendered="#{adminDriverController.driverList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+
+            <h:dataTable value="#{adminDriverController.viewableDriverList}" styleClass="outer_table"
+                         var="driverElement"
+                         rendered="#{adminDriverController.driverList.size() != 0}">
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Status" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="Approved" rendered="#{driverElement.isActive == 1}"/>
+                    <h:outputText value="Not Approved" rendered="#{driverElement.isActive != 1}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Added" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{driverElement.realDateAdded}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Driver Name" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{driverElement.firstName} #{driverElement.lastName}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Subcounty" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{adminDriverController.subcountyNamesMap.get(driverElement.subcountyID)}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Address" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{driverElement.address}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Assigned Truck" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
+                    <h:inputText value="#{driverElement.plateNumber}" rendered="#{!driverElement.editable}"
+                                 style="height: 20px; width: 100%; display: inline-block;border: none;
+                                 background-color: transparent"/>
+                    <h:selectOneMenu value="#{driverElement.plateNumber}" rendered="#{driverElement.editable}"
+                                     style="width: 100%; height: 25px">
+                        <f:selectItems value="#{adminDriverController.plateNumberList}"/>
+                    </h:selectOneMenu>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Phone Number" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{driverElement.phone}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Email" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{driverElement.email}"/>
+                </h:column>
+                <h:column>
+                    <h:outputLink  value="../resources/uploads/cvs/#{driverElement.cvName}">
+                        <h:graphicImage library="icons" name="download.png" style="margin: 0 2px -2px 0"/>CV
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:outputLink>
+                </h:column>
+                <h:column>
+                    <h:commandLink action="#{adminDriverController.editDriver(driverElement)}" 
+                                   rendered="#{(!driverElement.editable) and (driverElement.isActive == 1)}">
+                        <h:graphicImage library="icons" name="edit.png" style="margin: 0 2px -2px 0"/>Edit
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminDriverController.saveDriverChanges(driverElement)}"
+                                   rendered="#{driverElement.editable}">
+                        <h:graphicImage library="icons" name="save.png" style="margin: 0 2px -2px 0"/>Save
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminDriverController.acceptApplication(driverElement)}" 
+                                   rendered="#{driverElement.isActive != 1}">
+                        <h:graphicImage library="icons" name="accept.png" style="margin: 0 2px -2px 0"/>Accept
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>                    
+                </h:column> 
+                <h:column>
+                    <h:commandLink action="#{adminDriverController.rejectApplication(driverElement)}" 
+                                   rendered="#{driverElement.isActive != 1}">
+                        <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>Reject
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column>
+            </h:dataTable>
+            <h:outputText class="pages" value="Page #{adminDriverController.currentPage} of #{adminDriverController.noOfPages}"
+                          rendered="#{adminDriverController.driverList.size() != 0}"/>
+
+            <h:commandLink action="#{adminDriverController.previousDriverPage}" 
+                           rendered="#{adminDriverController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminDriverController.nextDriverPage}" 
+                           rendered="#{adminDriverController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminDriverController.refreshDrivers}" 
+                           rendered="#{adminDriverController.driverList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Drivers form-->
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>

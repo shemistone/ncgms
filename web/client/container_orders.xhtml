@@ -1,0 +1,131 @@
+<ui:composition template="../layout/client_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Container Orders
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateClient}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">
+        <h:form>
+            <h1>Recent Container Orders</h1>
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+            <h:outputText value="You have no container orders" rendered="#{clientContainerOrderController.containerOrderList.size() == 0}"/><br />
+
+            <h:outputText class="pages" value="Page #{clientContainerOrderController.currentPage} of #{clientContainerOrderController.noOfPages}"
+                          rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+
+            <h:commandLink action="#{clientContainerOrderController.previousContainerOrderPage}" rendered="#{clientContainerOrderController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientContainerOrderController.nextContainerOrderPage}" rendered="#{clientContainerOrderController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientContainerOrderController.refreshContainerOrders}" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+
+            <h:dataTable value="#{clientContainerOrderController.viewableContainerOrderList}" 
+                         rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"
+                         styleClass="outer_table" var="containerOrderElement">
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Status" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="Approved" rendered="#{containerOrderElement.isApproved == 1}"/>
+                    <h:outputText value="Not Approved" rendered="#{containerOrderElement.isApproved != 1}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Order No" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{containerOrderElement.orderID}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Placed" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{containerOrderElement.realDateAdded}"/>
+                </h:column>                        
+                <h:column>    
+                    <f:facet name="header">
+                        <h:outputText value="Plot Name" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{containerOrderElement.client.plotName}"/><br />
+                </h:column>
+                <h:column>         
+                    <f:facet name="header">
+                        <h:outputText value="Client Name" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{containerOrderElement.client.firstName} #{containerOrderElement.client.lastName}"/><br />
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Total Price" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="KShs: #{containerOrderElement.totalPrice}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Order Details" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+                    </f:facet>
+                    <h:dataTable value="#{containerOrderElement.orderDetailList}" 
+                                 rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"
+                                 styleClass="outer_table" var="orderDetailElement">
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText value="Container Name"/>
+                            </f:facet>
+                            <h:outputText value="#{orderDetailElement.container.name}"/><br />                                    
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText value="Quantity"/>
+                            </f:facet>
+                            <h:outputText value="#{orderDetailElement.quantity}"/><br />                                    
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText value="Cost"/>
+                            </f:facet>
+                            <h:outputText value="KShs: #{orderDetailElement.price}"/><br />                                    
+                        </h:column>
+                    </h:dataTable>
+                </h:column>
+            </h:dataTable>
+            <h:outputText class="pages" value="Page #{clientContainerOrderController.currentPage} of #{clientContainerOrderController.noOfPages}"
+                          rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+            <h:commandLink action="#{clientContainerOrderController.previousContainerOrderPage}" rendered="#{clientContainerOrderController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientContainerOrderController.nextContainerOrderPage}" rendered="#{clientContainerOrderController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientContainerOrderController.refreshContainerOrders}" rendered="#{clientContainerOrderController.containerOrderList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Recent orders Form-->
+    </ui:define>
+    <ui:define name="">
+        Bottom
+    </ui:define>
+</ui:composition>

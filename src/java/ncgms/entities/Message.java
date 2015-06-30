@@ -1,0 +1,112 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package ncgms.entities;
+
+import java.util.Date;
+
+/**
+ *
+ * @author root
+ */
+public class Message {
+
+    private int messageID = 0;
+    private String message = null;
+    private long dateAdded = 0;
+    private int isRead = 0;
+    private String realDateAdded = null;
+
+    private int userID = 0;
+    private User user = null;
+
+    public Message() {
+    }
+
+    public Message(String message, long dateAdded, int isRead, int userID) {
+        this.message = message;
+        this.dateAdded = dateAdded;
+        this.isRead = isRead;
+        this.userID = userID;
+    }
+
+    public Message(int messageID, String message, long dateAdded, int isRead, int userID) {
+        this.messageID = messageID;
+        this.message = message;
+        this.dateAdded = dateAdded;
+        this.isRead = isRead;
+        this.userID = userID;
+    }
+
+    public int getMessageID() {
+        return messageID;
+    }
+
+    public void setMessageID(int messageID) {
+        this.messageID = messageID;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public long getDateAdded() {
+        return dateAdded;
+    }
+
+    public void setDateAdded(long dateAdded) {
+        this.dateAdded = dateAdded;
+    }
+
+    public int getUserID() {
+        return userID;
+    }
+
+    public void setUserID(int userID) {
+        this.userID = userID;
+    }
+
+    public String getRealDateAdded() {
+        realDateAdded = new Date(dateAdded).toString();
+        realDateAdded = realDateAdded.substring(0, realDateAdded.
+                lastIndexOf("EAT")) + realDateAdded.substring(realDateAdded.
+                        lastIndexOf("EAT") + 4, realDateAdded.
+                                lastIndexOf("EAT") + 8);
+        return realDateAdded;
+    }
+
+    public void setRealDateAdded(String realDateAdded) {
+        this.realDateAdded = realDateAdded;
+    }
+
+    public int getIsRead() {
+        return isRead;
+    }
+
+    public void setIsRead(int isRead) {
+        this.isRead = isRead;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "\nMessage ID - " + messageID
+                + "\nMessage - " + message
+                + "\nDate Added - " + new Date(dateAdded).toString()
+                + "\nUser ID- " + userID;
+    }
+
+}

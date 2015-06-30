@@ -1,0 +1,26 @@
+<ui:composition template="./layout/ncgms_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Log In
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateUser}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>   
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">
+        <ui:include src="includes/home.xhtml"/>
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>
+

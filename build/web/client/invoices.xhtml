@@ -1,0 +1,148 @@
+<ui:composition template="../layout/client_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Invoices/Bills
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateClient}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>  
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">  
+        <!--Recent invoices form-->
+        <h:form>
+            <h1>Recent Invoices</h1>
+            <h:outputText value="You have no Invoices" 
+                          rendered="#{clientInvoiceController.invoiceList.size() == 0}"/><br />
+
+            <h:outputText class="pages" 
+                          value="Page #{clientInvoiceController.currentPage} of #{clientInvoiceController.noOfPages}"
+                          rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+
+            <h:commandLink action="#{clientInvoiceController.previousInvoicePage}" 
+                           rendered="#{clientInvoiceController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientInvoiceController.nextInvoicePage}" 
+                           rendered="#{clientInvoiceController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientInvoiceController.refreshInvoices}" 
+                           rendered="#{clientInvoiceController.invoiceList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+
+            <h:dataTable value="#{clientInvoiceController.viewableInvoiceList}"
+                         rendered="#{clientInvoiceController.invoiceList.size() != 0}"
+                         styleClass="outer_table" var="invoiceElement">
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Status" 
+                                      rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="Paid" 
+                                  rendered="#{invoiceElement.balance le invoiceElement.amountDue}"/>
+                    <h:outputText value="Not Paid" 
+                                  rendered="#{invoiceElement.balance gt invoiceElement.amountDue}"/>
+                </h:column> 
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Invoice No" 
+                                      rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.invoiceID}"/>
+                </h:column> 
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Created" 
+                                      rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.realDateAdded}"/>                          
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Due" 
+                                      rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.realDateDue}"/>                            
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Paid" 
+                                      rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.realDatePaid}"/>    
+                    <h:outputText value="Not Paid" 
+                                  rendered="#{invoiceElement.balance gt invoiceElement.amountDue}"/>
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Balance" 
+                                      rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="KShs #{invoiceElement.balance}"/>
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Amount Due" 
+                                      rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="KShs #{invoiceElement.amountDue}"/>
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Amount Paid" 
+                                      rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="KShs #{invoiceElement.amountPaid}"/>
+                </h:column>                
+
+            </h:dataTable>
+            <h:outputText class="pages" 
+                          value="Page #{clientInvoiceController.currentPage} of #{clientInvoiceController.noOfPages}"
+                          rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+
+            <h:commandLink action="#{clientInvoiceController.previousInvoicePage}" 
+                           rendered="#{clientInvoiceController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientInvoiceController.nextInvoicePage}" 
+                           rendered="#{clientInvoiceController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientInvoiceController.refreshInvoices}" 
+                           rendered="#{clientInvoiceController.invoiceList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Recent invoices form-->
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>
+

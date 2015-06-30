@@ -1,0 +1,109 @@
+<ui:composition template="../layout/admin_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Containers
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateLogisticsManager}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>   
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">
+        <!--Add container form-->
+        <h:form enctype="multipart/form-data">
+            <h1>Add Garbage Containers</h1>
+            <p>
+                Please fill in the form below.
+            </p>
+            
+            <label for="name">Container Name: *</label>
+            <h:inputText id="name" value="#{adminContainerController.name}"/>
+            <h:message for="name" errorClass="error" infoClass="info"/>
+            <br />
+            
+            <label for="name">Quantity: *</label>
+            <h:inputText id="quantity" value="#{adminContainerController.quantity}"/>
+            <h:message for="quantity" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="price">Price: *</label>
+            <h:inputText id="price" value="#{adminContainerController.price}"/>
+            <h:message for="price" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="container">Upload Container Image:*</label>
+            <h:inputFile id="container" validator="#{adminContainerController.validateFile}"
+                         value="#{adminContainerController.file}"/>
+            <h:message for="container" errorClass="error" infoClass="info"/>
+            <br />
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+
+            <h:commandLink action="#{adminContainerController.insertContainer}" 
+                           style="margin: 0.4em 0 0.4em 15%">
+                <h:graphicImage library="icons" name="add.png" style="margin: 0 2px -2px 0"/>Add Container
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Add container form-->
+        <!--Existing containers form-->
+        <h:form id="containers_form">
+            <h1>Existing Containers</h1>
+            <h:message for="containers_form" errorClass="error" infoClass="info"
+                       warnClass="warn"/>
+            <h:outputText value="You have no containers" 
+                          rendered="#{adminContainerController.containerList.size() == 0}"/>
+            <h:dataTable styleClass="containers" 
+                         value="#{adminContainerController.containerList}" 
+                         var="containerElement"
+                         rendered="#{adminContainerController.containerList.size() != 0}">
+                <h:column>
+                    <h:graphicImage library="uploads/images" name="#{containerElement.fileName}" 
+                                    height="100"/><br />
+                    <h:outputText value="#{containerElement.name}"/><br />  
+                    <h:outputText value="Price: #{containerElement.realPrice}"/><br />                    
+                    <h:outputText value="#{containerElement.noOfContainers} in stock"/><br />
+                    
+                    <h:outputLabel value="Quantity: " rendered="#{containerElement.editable}"
+                                   style="font-weight: normal; margin:0 0.6em 0 0"/>
+                    <h:inputText value="#{containerElement.noOfContainers}"
+                                 rendered="#{containerElement.editable}"
+                                 style="height: 20px; margin: 0; border: none; 
+                                 width: 15%; background-color: #eee"/><br />
+                    
+                    <h:commandLink action="#{adminContainerController.editContainer(containerElement)}" 
+                                   rendered="#{!containerElement.editable}">
+                        <h:graphicImage library="icons" name="edit.png"
+                                        style="margin: 0 2px -2px 0"/>Edit
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminContainerController.saveContainerChanges(containerElement)}"
+                                   rendered="#{containerElement.editable}">
+                        <h:graphicImage library="icons" name="save.png" 
+                                        style="margin: 0 2px -2px 0"/>Save
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminContainerController.removeContainer(containerElement)}">
+                        <h:graphicImage library="icons" name="delete.png" 
+                                        style="margin: 0 2px -2px 0"/>Remove
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column>                    
+            </h:dataTable>  
+        </h:form>
+        <!--Existing containers form-->
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>
+

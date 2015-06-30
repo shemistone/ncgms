@@ -1,0 +1,90 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+    <h1>Welcome to Nakuru County Garbage Collection Management </h1>
+    <p>Nakuru County Garbage Collection Management System is responsible collection
+        of solid waste within Nakuru County Our aim is not only to provide the
+        best solid waste collection services but to also minimize the effects 
+        caused by poor management on human health and also on the environment.
+    </p>
+    <div id="slider">
+        <img id="img" src="/ncgms/resources/images/image1.jpeg" height="200" 
+             style="width: 100%"/>
+        <div id="previous" class="nav" onclick="previous()">
+            <a><img src="/ncgms/resources/images/previous_image.png"/></a>
+        </div>
+        <div id="next" class="nav" onclick="next()">
+            <a><img src="/ncgms/resources/images/next_image.png"/></a>
+        </div>
+    </div>
+    <h1>Our Service  Packages</h1>
+    <div id="services">                       
+        <div>
+            <strong>Small package</strong><br />
+            This is the cheapest package we offer. It requires you as the
+            client to procure a 32 Gallon / 120 Liter garbage cart/bin which
+            has 1 or 2 plastic bags of trash. Garbage will be collected
+            from your premises on a weekly basis. You can order these garbage
+            containers once you sign up                
+            <hr />
+            <span>Charges: KShs 300 Per Month</span><br />
+        </div>
+        <div>
+            <strong>Medium package</strong><br />
+            This is the second package we offer. It requires you as the client 
+            to procure a 64 Gallon / 240 Liter garbage cart/bin which has 3 or 4 
+            plastic bags of trash. Garbage will be collected from your premises 
+            on a weekly basis. You can order these garbage containers once you sign up
+            <br />
+            <hr />
+            <span>Charges: KShs 500 Per Month</span>
+        </div>
+        <div>
+            <strong>Large package</strong><br />
+            This is the maximum package we offer. It requires you as the client 
+            to procure a 95 Gallon / 360 Liter garbage cart/bin which has 5 or 6 
+            plastic bags of trash. Garbage will be collected from your premises 
+            on a weekly basis. You can order these garbage containers once you sign up
+            <br />
+            <hr />
+            <span>Charges: KShs 750 Per Month</span>
+        </div>
+    </div>
+    <script src="/ncgms/js/jquery.js"></script>
+    <script type="text/javascript">
+            
+            var imageNo = 1;
+            var noOfImages = 3;
+
+            setInterval(function () {
+                $('#img').fadeOut(10000, next()).fadeIn(10000);
+
+            }, 10000);
+
+            function next() {
+                $(document).ready(function () {
+                    $('#img').attr("src", "/ncgms/resources/images/image" 
+                            + imageNo + ".jpeg");
+                    if (imageNo === noOfImages) {
+                        imageNo = 1;
+                    } else {
+                        imageNo++;
+                    }
+                });
+            }
+
+            function previous() {
+                $(document).ready(function () {
+                    $('#img').attr("src", "/ncgms/resources/images/image"
+                            + imageNo + ".jpeg");
+                    if (imageNo === 1) {
+                        imageNo = noOfImages;
+                    } else {
+                        imageNo--;
+                    }
+                });
+            }
+    </script>
+</ui:composition>

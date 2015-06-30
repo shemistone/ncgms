@@ -1,0 +1,88 @@
+<ui:composition template="./layout/ncgms_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://xmlns.jcp.org/jsf/passthrough">
+    <!--title-->
+    <ui:define name="title">
+        Driver Application
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+
+    </ui:define>  
+    <!--left-->
+    <ui:define name="">
+
+    </ui:define>
+    <ui:define name="content">
+        <h:form id="driver_application_form" enctype="multipart/form-data">
+            <h1>Driver Application</h1>
+            <p>
+                Please fill in the form below.<em>All fields are required</em>
+            </p>
+            
+            <label for="first_name">First Name: *</label>
+            <h:inputText p:placeholder="John" id="first_name" 
+                         value="#{driverApplicationController.firstName}"/>
+            <h:message for="first_name" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="last_name">Last Name: *</label>
+            <h:inputText p:placeholder="Doe" id="last_name" 
+                         value="#{driverApplicationController.lastName}"/>
+            <h:message for="last_name" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="id_number">National ID Number: *</label>
+            <h:inputText p:placeholder="12345678" id="id_number" 
+                         value="#{driverApplicationController.idNumber}"/>
+            <h:message for="id_number" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="email">Email: *</label>
+            <h:inputText p:placeholder="johndoe@example.com" id="email" 
+                         value="#{driverApplicationController.email}"/>
+            <h:message for="email" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="phone">Phone Number: *</label>
+            <h:inputText p:placeholder="0712345678" id="phone" 
+                         value="#{driverApplicationController.phone}"/>
+            <h:message for="phone" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="subcounty">Sub-County: *</label>
+            <h:selectOneMenu id="subcounty" value="#{driverApplicationController.subcounty}">
+                <f:selectItems value="#{driverApplicationController.subcountyList}"/>
+            </h:selectOneMenu>
+            <h:message for="subcounty" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="address">Postal Address: *</label>
+            <h:inputText p:placeholder="12-12345 Town" id="address" 
+                         value="#{driverApplicationController.address}"/>
+            <h:message for="address" errorClass="error" infoClass="info"/>
+            <br />   
+
+            <label for="cv">Upload curriculum vitae:*</label>
+            <h:inputFile id="cv" validator="#{driverApplicationController.validateFile}" 
+                         value="#{driverApplicationController.file}"/>
+            <h:message for="cv" errorClass="error" infoClass="info"/>
+            <br />
+            <hr />
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+
+            <h:commandButton value="Submit Application" 
+                             action="#{driverApplicationController.insertDriverAndUser}">
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandButton>
+
+        </h:form>
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>
+

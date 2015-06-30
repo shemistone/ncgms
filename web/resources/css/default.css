@@ -1,0 +1,219 @@
+
+body {
+    font-size: 75%;
+    font-family: Verdana, "Verdana CE",  Arial, "Arial CE", "Lucida Grande CE", lucida,
+        "Helvetica CE", sans-serif;
+    color: #000000;  
+    margin: 0;
+}
+
+h1 {
+    font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
+    border-bottom: 4px solid #AFAFAF; 
+    border-top: 1px solid #AFAFAF;
+    font-size:  150%;
+    font-weight: bold;
+    margin: 0.6em;
+    padding: 0.6em;
+    color: #D20005;
+    background-color: #fff;
+    border-radius: 0.6em;
+    text-align: center;
+}
+
+.error, .info, .warn{
+    padding: 0.2em;
+    margin: 0.2em;
+}
+
+.error{
+    color: red;
+    font-weight: bold;
+    list-style-type: none;
+}
+
+.info{
+    color: green;
+    font-weight: bold;
+    list-style-type: none;
+}
+
+.warn{
+    color: #f16802;
+    font-weight: bold;
+    list-style-type: none;
+}
+
+
+em{
+    font-weight: bold;
+    color: red;
+    margin: 0.2em;
+    padding: 0.2em;
+}
+
+p{
+    padding: 0.2em;
+}
+
+a{
+    display: inline-block;
+    margin: 0.2em;
+}
+
+a:link, a:visited {
+    color: #045491;
+    font-weight : bold;
+    text-decoration: none;
+}
+
+a:link:hover, a:visited:hover  {
+    color: #045491;
+    font-weight : bold;
+    text-decoration : underline;
+}
+
+#top a:link, #top a:visited {
+    color: white;
+    font-weight : bold;
+    text-decoration: none;
+}
+
+#top a:link:hover, #top a:visited:hover  {
+    color: black;
+    font-weight : bold;
+    text-decoration : underline;
+}
+
+a:active{
+    position: relative;
+    top: 0.1em;
+}
+.containers tr{
+    display: inline;
+    margin: 0 0.8em 0 0.8em;
+    float: left;
+}
+#top label{
+    font-weight: bold;
+}
+
+#top span{
+    font-weight: bold;
+    font-size: 110%;
+}
+
+#user_log_in_form{
+    display: inline-block; 
+    margin: 0.2em;
+    float: right;
+}
+
+#user_log_in_form input, #user_log_in_form label{
+    padding: 0.2em;
+    margin: 0.2em;
+}
+
+#content label{
+    font-size: 100%;
+    font-weight: bold;
+    display: inline-block;
+    padding: 0.2em;
+    margin: 0.2em;
+    width: 15%;
+    text-align: right;
+}
+
+#content select{
+    padding: 0.2em;
+    margin: 0.2em;
+    width: 24.5%;
+    height: 35px;
+    background-color: #fff;
+    border: solid 0.1em #aaa;
+    border-radius: 0.2em;
+}
+
+#content input[type='text'], #content input[type='password'], input[type='file']{
+    padding: 0.2em;
+    margin: 0.2em;
+    width: 23.5%;
+    height: 25px;
+}
+
+#content input[type='submit']:active{
+    position: relative;
+    top: 0.1em;
+}
+
+td, tr, th{
+    padding: 0.4em;
+    padding-top: 0;
+    margin: 0.4em;
+    text-align: left;
+}
+
+table{
+    margin: 0.4em;
+    padding: 0.4em;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.outer_table table{
+    margin-left: -0.4em;
+}
+
+.outer_table > tbody > tr{
+    border-bottom: solid #eee 0.2em;
+}
+
+.outer_table > thead > tr{
+    border-bottom: solid #aaa 0.2em;
+}
+
+#content form{
+    width: 100%;
+}
+
+#application_form a{
+    background-color: #eee; 
+    border: solid #eee 0.2em;
+    border-radius: 0.6em;
+    padding: 0.6em;
+    box-shadow: 0.4em 0.4em 0.6em #555;
+}
+
+img{
+    margin: 0.2em;
+}
+
+#services > div{
+    margin: 0.4em;
+    padding: 0.4em;
+    width: 30%;
+    float: left;
+}
+
+#services span{
+    color: #012;
+    font-weight: bold;
+}
+
+#footer div{
+    display: inline-block;
+    margin: 0.2em;
+}
+
+#footer strong{
+    text-decoration: underline;
+}
+
+.pages, .cart{
+    margin: 0.6em;
+    padding: 0.6em;
+    background-color: #045491;
+    color: #fff;
+    font-weight: bold;
+}
+

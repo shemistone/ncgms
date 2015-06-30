@@ -1,0 +1,110 @@
+<ui:composition template="../layout/client_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Containers
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateClient}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>  
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">
+        <h1>Order Garbage Containers</h1>
+        <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+        <!--Shopping cart form-->
+        <h:form>
+            <h:outputText styleClass="cart" value="Current Shopping Cart content: #{clientContainerController.noOfContainers} Items"/>
+            <h:dataTable value="#{clientContainerController.orderDetailList}" 
+                         styleClass="outer_table" var="orderDetailElement" 
+                         rendered="#{clientContainerController.orderDetailList.size() != 0}">
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Container Name" 
+                                      rendered="#{clientContainerController.orderDetailList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{orderDetailElement.container.name}"/>
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Quantity" 
+                                      rendered="#{clientContainerController.orderDetailList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{orderDetailElement.quantity} "/>                            
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Cost" rendered="#{clientContainerController.orderDetailList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="KShs #{orderDetailElement.price} "/>
+                </h:column>
+
+                <h:column>
+                    <h:commandLink action="#{clientContainerController.removeFromCart(orderDetailElement.orderDetailID)}">
+                        <h:graphicImage library="icons" name="delete.png" 
+                                        style="margin: 0 2px -2px 0"/>Remove from Cart
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column>
+            </h:dataTable>
+            <h:outputText styleClass="cart" value="Total Amount: KShs #{clientContainerController.totalPrice} " 
+                          rendered="#{clientContainerController.cartRendered}"/><br />
+            <h:commandLink action="#{clientContainerController.insertContainerOrder}" 
+                           rendered="#{clientContainerController.cartRendered}"
+                           style="margin: 1em">
+                <h:graphicImage library="icons" name="buy.png" 
+                                style="margin: 0 2px -2px 0"/>Place Order
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Shopping cart form-->
+        <!--Select containers form-->
+        <h:form>
+            <h1>Select Appropriate Container.</h1>
+            <h:outputText value="There are no containers." 
+                          rendered="#{clientContainerController.containerList.size() == 0}"/>
+            <h:dataTable styleClass="containers" value="#{clientContainerController.containerList}"
+                         var="containerElement">
+                <h:column>
+                    <h:form>
+                        <h:graphicImage library="uploads/images" name="#{containerElement.fileName}" 
+                                        height="100"/><br />
+                        <h:outputText value="#{containerElement.name}"/><br />
+                        <h:outputText value="Price: #{containerElement.realPrice}"/><br />                    
+                        <h:outputText value="#{containerElement.noOfContainers} in stock."/><br /> 
+                        <h:outputText value="Quantity: "/>
+                        <h:inputText  id="quantity" value="#{clientContainerController.quantity}" 
+                                      style="margin: 0.1em; padding: 0.1em; height: 20px; 
+                                      width: 2em; border: none;
+                                      background-color: #ccc"/>
+                        <h:message for="quantity" errorClass="error" infoClass="info"/><br />
+                        <h:commandLink action="#{clientContainerController.addToCart(containerElement)}">
+                            <h:graphicImage library="icons" name="add.png" style="margin: 0 2px -2px 0"/>Add To Cart
+                            <f:ajax event="action" execute="@form" render="@all"/>
+                        </h:commandLink>
+                    </h:form>
+                </h:column>                    
+            </h:dataTable>  
+            <h:commandLink action="#{clientContainerController.refreshContainers}" rendered="#{clientContainerController.containerList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Select containers form-->
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>
+

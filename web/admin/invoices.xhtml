@@ -1,0 +1,200 @@
+<ui:composition template="../layout/admin_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Invoices/Bills
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateLogisticsManager}"/>
+        </f:metadata>
+    </ui:define> 
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define> 
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">  
+        <!--Recent invoices form-->
+        <h:form id="invoices_form">
+            <h1>Recent Invoices</h1>
+            <h:outputText value="There are no Invoices" 
+                          rendered="#{adminInvoiceController.invoiceList.size()  == 0}"/>
+            <br />
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"
+                        warnClass="warn"/>
+            <h:outputLabel for="search" value="Search by:" 
+                           rendered="#{adminInvoiceController.invoiceList.size() != 0}"/>
+            <h:selectOneMenu id="search" value="#{adminInvoiceController.searchBy}" 
+                             rendered="#{adminInvoiceController.invoiceList.size() != 0}">
+                <f:selectItems value="#{adminInvoiceController.searchByArray}"/>
+            </h:selectOneMenu>
+            <h:inputText value="#{adminInvoiceController.searchTerm}" 
+                         rendered="#{adminInvoiceController.invoiceList.size() != 0}"/>
+            <h:commandLink action="#{adminInvoiceController.searchInvoices}" id="search_button"
+                           rendered="#{adminInvoiceController.invoiceList.size() != 0}">
+                <h:graphicImage library="icons" name="search.png" style="margin: 0 2px -2px 0"/>Search
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:message for="search_button" errorClass="error" infoClass="info"/><br />
+
+            <h:outputText class="pages" value="Page #{adminInvoiceController.currentPage} of #{adminInvoiceController.noOfPages}"
+                          rendered="#{adminInvoiceController.invoiceList.size() != 0}"/>
+
+            <h:commandLink action="#{adminInvoiceController.previousInvoicePage}" 
+                           rendered="#{adminInvoiceController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminInvoiceController.nextInvoicePage}" 
+                           rendered="#{adminInvoiceController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminInvoiceController.refreshInvoices}" 
+                           rendered="#{adminInvoiceController.invoiceList.size()  != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+
+            <h:dataTable value="#{adminInvoiceController.viewableInvoiceList}" 
+                         styleClass="outer_table" var="invoiceElement"
+                         rendered="#{adminInvoiceController.invoiceList.size() != 0}">
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Status" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="Paid" 
+                                  rendered="#{(invoiceElement.balance) lt (invoiceElement.amountDue)}"/>
+                    <h:outputText value="Not Paid"
+                                  rendered="#{(invoiceElement.balance) ge (invoiceElement.amountDue)}"/>
+                </h:column> 
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Invoice No" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.invoiceID}"/>
+                </h:column> 
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Plot Name" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.client.plotName}"/>
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Client Name" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.client.firstName} #{invoiceElement.client.lastName}"/>
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Created" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.realDateAdded}"/>                          
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Due" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.realDateDue}"/>                        
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Paid" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{invoiceElement.realDatePaid}"/>
+                    <h:outputText value="Not Paid" 
+                                  rendered="#{invoiceElement.balance gt invoiceElement.amountDue}"/>
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Balance" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="KShs #{invoiceElement.balance}"/>
+                </h:column>                
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Amount Due" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="KShs #{invoiceElement.amountDue}"/>
+                </h:column>
+
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Amount Paid" 
+                                      rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
+                    </f:facet>
+                    <h:outputText value="KShs #{invoiceElement.amountPaid}" 
+                                  rendered="#{!invoiceElement.editable}"/>
+                    <h:inputText value="#{invoiceElement.amountPaid}" rendered="#{invoiceElement.editable}"
+                                 style="margin: 0 -8em 0 0; padding: 0; height: 20px; 
+                                 width: 100%; display: block;border: none;
+                                 background-color: #eee"/>
+                </h:column>
+
+                <h:column>
+                    <h:commandLink action="#{adminInvoiceController.editInvoice(invoiceElement)}" 
+                                   rendered="#{!invoiceElement.editable}">
+                        <h:graphicImage library="icons" name="edit.png" style="margin: 0 2px -2px 0"/>Edit
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminInvoiceController.saveInvoiceChanges(invoiceElement)}"
+                                   rendered="#{invoiceElement.editable}">
+                        <h:graphicImage library="icons" name="save.png" style="margin: 0 2px -2px 0"/>Save
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column>
+
+
+            </h:dataTable>
+            <h:outputText class="pages" value="Page #{adminInvoiceController.currentPage} of #{adminInvoiceController.noOfPages}"
+                          rendered="#{adminInvoiceController.invoiceList.size() != 0}"/>
+
+            <h:commandLink action="#{adminInvoiceController.previousInvoicePage}" 
+                           rendered="#{adminInvoiceController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminInvoiceController.nextInvoicePage}" 
+                           rendered="#{adminInvoiceController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminInvoiceController.refreshInvoices}" 
+                           rendered="#{adminInvoiceController.invoiceList.size()  != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Recent invoices form-->
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>
+
+
+

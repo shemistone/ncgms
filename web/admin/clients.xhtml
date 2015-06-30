@@ -1,0 +1,186 @@
+<ui:composition template="../layout/admin_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Clients
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateLogisticsManager}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">
+        <!--Clients Form-->
+        <h:form id="clients_form">       
+            <h1>Clients</h1>
+            
+            <h:outputText value="You have no Clients" 
+                          rendered="#{adminClientController.clientList.size() == 0}"/><br />  
+
+            <h:outputLabel for="search" value="Search by:" 
+                           rendered="#{adminClientController.clientList.size() != 0}"/>
+            <h:selectOneMenu id="search" value="#{adminClientController.searchBy}" 
+                             rendered="#{adminClientController.clientList.size() != 0}">
+                <f:selectItems value="#{adminClientController.searchByArray}"/>
+            </h:selectOneMenu>
+            <h:inputText value="#{adminClientController.searchTerm}" 
+                         rendered="#{adminClientController.clientList.size() != 0}"/>
+            <h:commandLink action="#{adminClientController.searchClients}" id="search_button" 
+                           rendered="#{adminClientController.clientList.size() != 0}">
+                <h:graphicImage library="icons" name="search.png" style="margin: 0 2px -2px 0"/>Search
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:message for="search_button" errorClass="error" infoClass="info"/><br />
+            
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+
+            <h:outputText class="pages"  value="Page #{adminClientController.currentPage} of #{adminClientController.noOfPages}"
+                          rendered="#{adminClientController.clientList.size() != 0}"/>
+
+            <h:commandLink action="#{adminClientController.previousClientPage}" 
+                           rendered="#{adminClientController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminClientController.nextClientPage}" 
+                           rendered="#{adminClientController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminClientController.refreshClients}" 
+                           rendered="#{adminClientController.clientList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+
+            <h:dataTable value="#{adminClientController.viewableClientList}" styleClass="outer_table" 
+                         var="clientElement"
+                         rendered="#{adminClientController.clientList.size() != 0}">
+                <h:column class="txt">
+                    <f:facet name="header">
+                        <h:outputText value="Status" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="Approved" rendered="#{clientElement.isActive == 1}"/>
+                    <h:outputText value="Not Approved" rendered="#{clientElement.isActive != 1}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Added" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{clientElement.realDateAdded}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Plot Name" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{clientElement.plotName}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Client Name" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{clientElement.firstName} #{clientElement.lastName}"/>
+                </h:column>                        
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Subcounty" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{adminClientController.subcountyNamesMap.get(clientElement.subcountyID)}"/>
+                </h:column> 
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Address" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{clientElement.address}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Assigned Truck" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:inputText value="#{clientElement.plateNumber}" rendered="#{!clientElement.editable}"
+                                 style="height: 20px; width: 100%; display: inline-block;border: none;
+                                 background-color: transparent"/>
+                    <h:selectOneMenu value="#{clientElement.plateNumber}" rendered="#{clientElement.editable}"
+                                     style="width: 100%; height: 25px">
+                        <f:selectItems value="#{adminClientController.plateNumberList}"/>
+                    </h:selectOneMenu>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Phone Number" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{clientElement.phone}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Email" rendered="#{adminClientController.clientList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{clientElement.email}" rendered="#{adminClientController.clientList.size() != 0}"/>
+                </h:column>
+                <h:column>
+                    <h:commandLink action="#{adminClientController.editClient(clientElement)}" 
+                                   rendered="#{(!clientElement.editable) and (clientElement.isActive == 1)}">
+                        <h:graphicImage library="icons" name="edit.png" style="margin: 0 2px -2px 0"/>Edit
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminClientController.saveClientChanges(clientElement)}"
+                                   rendered="#{clientElement.editable}">
+                        <h:graphicImage library="icons" name="save.png" style="margin: 0 2px -2px 0"/>Save
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminClientController.acceptAppliaction(clientElement)}" 
+                                   rendered="#{clientElement.isActive != 1}">
+                        <h:graphicImage library="icons" name="accept.png" style="margin: 0 2px -2px 0"/>
+                        Accept
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>                   
+                    </h:column> 
+                <h:column>
+                    <h:commandLink action="#{adminClientController.rejectApplication(clientElement)}" 
+                                   rendered="#{clientElement.isActive != 1}">
+                        <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>
+                        Reject
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink><br />
+                    <h:commandLink action="#{adminClientController.removeClient(clientElement)}" 
+                                   rendered="#{clientElement.wantsToCancel == 1}">
+                        <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>
+                        Remove
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column>
+            </h:dataTable>
+            <h:outputText class="pages" value="Page #{adminClientController.currentPage} of #{adminClientController.noOfPages}"
+                          rendered="#{adminClientController.clientList.size() != 0}"/>
+
+            <h:commandLink action="#{adminClientController.previousClientPage}" 
+                           rendered="#{adminClientController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminClientController.nextClientPage}" 
+                           rendered="#{adminClientController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminClientController.refreshClients}" 
+                           rendered="#{adminClientController.clientList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Clients form-->
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,189 @@
+<ui:composition template="../layout/admin_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Sanitation Workers
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateLogisticsManager}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">
+        <!--Touts Form-->
+        <h:form id="touts_form">       
+            <h1>Sanitation Workers</h1>
+            
+            <h:outputText value="You have no Sanitation workers" 
+                          rendered="#{adminToutController.toutList.size() == 0}"/><br />
+
+            <h:outputLabel for="search" value="Search by:" 
+                           rendered="#{adminToutController.toutList.size() != 0}"/>
+            <h:selectOneMenu id="search" value="#{adminToutController.searchBy}" 
+                             rendered="#{adminToutController.toutList.size() != 0}">
+                <f:selectItems value="#{adminToutController.searchByArray}"/>
+            </h:selectOneMenu>
+            <h:inputText value="#{adminToutController.searchTerm}" 
+                         rendered="#{adminToutController.toutList.size() != 0}"/>
+            <h:commandLink action="#{adminToutController.searchTouts}" id="search_button" 
+                           rendered="#{adminToutController.toutList.size() != 0}">
+                <h:graphicImage library="icons" name="search.png" 
+                                style="margin: 0 2px -2px 0"/>Search
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:message for="search_button" errorClass="error" infoClass="info"/><br />
+            
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+            
+            <h:outputText class="pages" value="Page #{adminToutController.currentPage} of #{adminToutController.noOfPages}"
+                          rendered="#{adminToutController.toutList.size() != 0}"/>
+
+            <h:commandLink action="#{adminToutController.previousToutPage}" 
+                           rendered="#{adminToutController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminToutController.nextToutPage}" 
+                           rendered="#{adminToutController.nextRendered}">
+                <h:graphicImage library="icons" name="next.png"
+                                style="margin: 0 2px -2px 0"/>Next
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminToutController.refreshTouts}" 
+                           rendered="#{adminToutController.toutList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" 
+                                style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+
+            <h:dataTable value="#{adminToutController.viewableToutList}" styleClass="outer_table"
+                         var="toutElement"
+                         rendered="#{adminToutController.toutList.size() != 0}">
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Status" rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="Approved" rendered="#{toutElement.isActive == 1}"/>
+                    <h:outputText value="Not Approved" rendered="#{toutElement.isActive != 1}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Date Added" rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{toutElement.realDateAdded}"/>
+                </h:column> 
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Sanitation Worker Name" rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{toutElement.firstName} #{toutElement.lastName}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Subcounty" rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{adminToutController.subcountyNamesMap.get(toutElement.subcountyID)}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Address" rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{toutElement.address}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Assigned Truck" rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
+                    <h:inputText value="#{toutElement.plateNumber}" rendered="#{!toutElement.editable}"
+                                 style="height: 20px; width: 100%; display: inline-block;border: none;
+                                 background-color: transparent"/>
+                    <h:selectOneMenu value="#{toutElement.plateNumber}" rendered="#{toutElement.editable}"
+                                     style="width: 100%; height: 25px">
+                        <f:selectItems value="#{adminToutController.plateNumberList}"/>
+                    </h:selectOneMenu>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Phone Number" rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{toutElement.phone}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Email" rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
+                    <h:outputText value="#{toutElement.email}"/>
+                </h:column>
+                <h:column>
+                    <h:outputLink  value="../resources/uploads/cvs/#{toutElement.cvName}">                        
+                        <h:graphicImage library="icons" name="download.png" style="margin: 0 2px -2px 0"/>CV
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:outputLink>
+                </h:column>
+                <h:column>
+                    <h:commandLink action="#{adminToutController.editTout(toutElement)}" 
+                                   rendered="#{(!toutElement.editable) and (toutElement.isActive == 1)}">
+                        <h:graphicImage library="icons" name="edit.png" style="margin: 0 2px -2px 0"/>Edit
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminToutController.saveToutChanges(toutElement)}"
+                                   rendered="#{toutElement.editable}">
+                        <h:graphicImage library="icons" name="save.png" 
+                                        style="margin: 0 2px -2px 0"/>Save
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminToutController.acceptApplication(toutElement)}" 
+                                   rendered="#{toutElement.isActive != 1}">
+                        <h:graphicImage library="icons" name="accept.png" 
+                                        style="margin: 0 2px -2px 0"/>Accept
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column> 
+                <h:column>
+                    <h:commandLink action="#{adminToutController.rejectApplication(toutElement)}" 
+                                   rendered="#{toutElement.isActive != 1}">
+                        <h:graphicImage library="icons" name="delete.png" 
+                                        style="margin: 0 2px -2px 0"/>Reject
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column>
+            </h:dataTable>
+            <h:outputText class="pages" 
+                          value="Page #{adminToutController.currentPage} of #{adminToutController.noOfPages}"
+                          rendered="#{adminToutController.toutList.size() != 0}"/>
+
+            <h:commandLink action="#{adminToutController.previousToutPage}" 
+                           rendered="#{adminToutController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminToutController.nextToutPage}" 
+                           rendered="#{adminToutController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" 
+                                    style="margin: 0 2px -2px 0"/>
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{adminToutController.refreshTouts}" 
+                           rendered="#{adminToutController.toutList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" 
+                                style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Touts form-->
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>

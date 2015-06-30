@@ -1,0 +1,102 @@
+<ui:composition template="../layout/client_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        Complaints/Enquiries
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateClient}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>   
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <ui:define name="content">
+        <!--Complaint/Enquiry Form-->
+        <h:form>       
+            <h1>Send us a Complaint or Enquiry</h1>
+            <p>
+                Please fill in the form below.
+            </p>
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+            <label for="complaint" style="width: 20%; text-align: left">Enter Complaint/Enquiry below: *</label><br />
+            <h:inputTextarea cols="50" rows="2" id="complaint" value="#{clientComplaintController.complaint}" 
+                             style="background-color: #eee; border-style: none; 
+                             padding: 0.4em"/>
+            <h:message for="complaint" errorClass="error" infoClass="info"/>
+            <br />
+
+            <h:commandLink action="#{clientComplaintController.insertComplaint}">
+                <h:graphicImage library="icons" name="submit.png" style="margin: 0 2px -2px 0"/>Submit Complaint/Enquiry
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Complaint/Enquiry Form-->
+        <!--Recent Complaints Form-->
+        <h:form>
+            <h1>Recent Complaints/Enquiries</h1>
+            <h:outputText value="You have no Complaints" 
+                          rendered="#{clientComplaintController.complaintList.size() == 0}"/><br />
+
+            <h:outputText class="pages" 
+                          value="Page #{clientComplaintController.currentPage} of #{clientComplaintController.noOfPages}"
+                          rendered="#{clientComplaintController.complaintList.size() != 0}"/>
+            <h:commandLink action="#{clientComplaintController.previousComplaintPage}" rendered="#{clientComplaintController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientComplaintController.nextComplaintPage}" rendered="#{clientComplaintController.nextRendered}">
+                <h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>Next
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientComplaintController.refreshComplaints}" rendered="#{!clientComplaintController.noComplaintsRendered}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+
+            <h:dataTable value="#{clientComplaintController.viewableComplaintList}" 
+                         rendered="#{clientComplaintController.complaintList.size() != 0}"
+                         var="complaintElement">
+                <h:column>
+                    <h:form>
+                        <h:outputText value="#{complaintElement.realDateAdded} #{complaintElement.complaint}"/><br />
+                        <h:dataTable value="#{complaintElement.responseList}" 
+                                     rendered="#{complaintElement.responseList.size() != 0}"
+                                     var="responseElement">
+                            <h:column>
+                                <h:outputText value="---#{responseElement.realDateAdded} #{responseElement.response}"/><br />                                    
+                            </h:column>
+                        </h:dataTable>
+                    </h:form>
+                </h:column>                        
+            </h:dataTable>
+            <h:outputText class="pages" value="Page #{clientComplaintController.currentPage} of #{clientComplaintController.noOfPages}"
+                          rendered="#{clientComplaintController.complaintList.size() != 0}"/>
+
+            <h:commandLink action="#{clientComplaintController.previousComplaintPage}" rendered="#{clientComplaintController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientComplaintController.nextComplaintPage}" rendered="#{clientComplaintController.nextRendered}">
+                <h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>Next
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:commandLink action="#{clientComplaintController.refreshComplaints}" rendered="#{!clientComplaintController.noComplaintsRendered}">
+                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+        </h:form>
+        <!--Recent Complaints Form-->
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>
+

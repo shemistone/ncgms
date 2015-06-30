@@ -1,0 +1,29 @@
+<ui:composition template="../layout/admin_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--title-->
+    <ui:define name="title">
+        NCGMS Home
+        <f:metadata>
+            <f:viewAction action="#{logInLogOutController.validateLogisticsManager}"/>
+        </f:metadata>
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+        Top
+    </ui:define>
+    <!--left-->
+    <ui:define name="">
+        Left
+    </ui:define>
+    <!--content-->
+    <ui:define name="content">
+        <ui:include src="../includes/home.xhtml"/>
+    </ui:define>
+    <!--bottom-->
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>
+

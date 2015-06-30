@@ -1,0 +1,113 @@
+<ui:composition template="../layout/ncgms_template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://xmlns.jcp.org/jsf/passthrough">    
+    <!--title-->
+    <ui:define name="title">
+        Client Application       
+    </ui:define>
+    <!--top-->
+    <ui:define name="">
+
+    </ui:define>   
+    <!--left-->
+    <ui:define name="">
+
+    </ui:define>
+    <ui:define name="content">
+        <h:form id="client_application_form">
+            <h1>Client Appplication</h1>
+            <h2>Personal Information</h2>
+            <p>
+                Please fill in the form below.<em>All fields are required</em>
+            </p>
+
+            <label for="first_name">First Name: *</label>
+            <h:inputText p:placeholder="John" id="first_name" 
+                         value="#{clientApplicationController.firstName}"/>
+            <h:message for="first_name" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="last_name">Last Name: *</label>
+            <h:inputText p:placeholder="Doe" id="last_name" 
+                         value="#{clientApplicationController.lastName}"/>
+            <h:message for="last_name" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="id_number">National ID Number: *</label>
+            <h:inputText p:placeholder="12345678" id="id_number"
+                         value="#{clientApplicationController.idNumber}"/>
+            <h:message for="id_number" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="email">Email: *</label>
+            <h:inputText p:placeholder="johndoe@example.com" id="email" 
+                         value="#{clientApplicationController.email}"/>
+            <h:message for="email" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="phone">Phone Number: *</label>
+            <h:inputText p:placeholder="0712345678" id="phone" 
+                         value="#{clientApplicationController.phone}"/>
+            <h:message for="phone" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="subcounty">Sub-County: *</label>
+            <h:selectOneMenu id="subcounty" value="#{clientApplicationController.subcounty}">
+                <f:selectItems value="#{clientApplicationController.subcountyList}"/>
+            </h:selectOneMenu>
+            <h:message for="subcounty" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="address">Postal Address: *</label>
+            <h:inputText p:placeholder="12-12345 Town" id="address" 
+                         value="#{clientApplicationController.address}"/>
+            <h:message for="address" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="plot_name">Plot Name: *</label>
+            <h:inputText p:placeholder="Plot name" id="plot_name" 
+                         value="#{clientApplicationController.plotName}"/>
+            <h:message for="plot_name" errorClass="error" infoClass="info"/>
+            <br />
+            <label for="package_name">Choose Package:</label>
+            <h:selectOneMenu id="package_name" value="#{clientApplicationController.packageName}">
+                <f:selectItems value="#{clientApplicationController.packageList}"/>
+            </h:selectOneMenu>
+            <h:message for="package_name" errorClass="error" infoClass="info"/>
+            <br />
+            
+            <label for="username">Username: *</label>
+            <h:inputText p:placeholder="username" id="username" 
+                         value="#{clientApplicationController.username}"/>
+            <h:message for="username" errorClass="error" infoClass="info"
+                       warnClass="warn"/>
+            <br />
+
+            <label for="password">Password: *</label>
+            <h:inputSecret p:placeholder="password" id="password" 
+                           value="#{clientApplicationController.password}"/>
+            <h:message for="password" errorClass="error" infoClass="info"/>
+            <br />
+
+            <label for="password_again">Re-enter Password: *</label>
+            <h:inputSecret p:placeholder="password" id="password_again" 
+                           validator="#{clientApplicationController.validatePasswords}" 
+                           value="#{clientApplicationController.passwordAgain}"/>
+            <h:message for="password_again" errorClass="error" infoClass="info"/>
+            
+            <hr />
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
+
+            <h:commandButton value="Submit Application" 
+                             action="#{clientApplicationController.insertClientAndUser}">
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandButton>
+        </h:form>
+    </ui:define>
+    <ui:define name="">
+
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+        <h:outputStylesheet library="css" name="cssLayout.css"/>
+        <h:outputStylesheet library="css" name="default.css"/>
+        <title>
+            <ui:insert name="title">
+                Facelets Template
+            </ui:insert>
+        </title>
+    </h:head>
+
+    <h:body>
+        <div id="body">
+            <div id="top">
+                <ui:insert name="top">
+                    <a href="/ncgms/faces/client/index.xhtml">
+                        <h:graphicImage library="images" name="logo.png" 
+                                        style="margin: 0.2em"/>
+                    </a>
+                    <h:form style="display: inline-block; margin: 0.2em;
+                            float: right;">
+                        <h:outputText value="Hi #{logInLogOutController.client.firstName}"
+                                      style="margin: 0.2em"/><br />                                        
+                        <h:commandLink action="#{clientIndexController.toContainer}">
+                            <h:graphicImage library="icons" name="cart.png" 
+                                            style="margin: 0 2px -4px 0"/>
+                            Shopping Cart: #{clientContainerController.noOfContainers} Items
+                        </h:commandLink><br/>                    
+                        <h:commandLink action="#{clientIndexController.toMessage}">
+                            <h:graphicImage library="icons" name="inbox.png" 
+                                            style="margin: 0 2px -4px 0"/>
+                            Messages: #{messageController.noOfUnreadMessages} Unread
+                        </h:commandLink><br />
+                        <h:commandLink action="#{logInLogOutController.logOut}">
+                            <h:graphicImage library="icons" name="log_out.png" 
+                                            style="margin: 0 2px -4px 0"/>Log Out
+                        </h:commandLink>
+                    </h:form>
+                </ui:insert>
+            </div>
+            <div>
+                <div id="left">
+                    <ui:insert name="left">
+                        <h:form>
+                            <h:commandLink action="#{clientIndexController.toHome}">
+                                <h:graphicImage library="icons" name="home.png" 
+                                                style="margin: 0 2px -2px 0"/>Home
+                            </h:commandLink><br />
+                            <h:commandLink action="#{clientIndexController.toContainer}">
+                                <h:graphicImage library="icons" name="containers.png" 
+                                                style="margin: 0 2px -4px 0"/>Containers
+                            </h:commandLink><br />
+                            <h:commandLink action="#{clientIndexController.toContainerOrder}">
+                                <h:graphicImage library="icons" name="orders.png" 
+                                                style="margin: 0 2px -4px 0"/>Container Orders
+                            </h:commandLink><br />
+                            <h:commandLink action="#{clientIndexController.toComplaint}">
+                                <h:graphicImage library="icons" name="complaints.png" 
+                                                style="margin: 0 2px -4px 0"/>Complaints/Enquiries
+                            </h:commandLink><br />
+                            <h:commandLink action="#{clientIndexController.toInvoice}">
+                                <h:graphicImage library="icons" name="invoices.png" 
+                                                style="margin: 0 2px -4px 0"/>Invoices/Bills
+                            </h:commandLink><br />
+                        </h:form>
+                        <hr />
+                        <h:form id="password_form" style="padding: 0.6em;
+                                background-image: linear-gradient(#eee, #fff, #eee);
+                                border-radius: 0.8em;">       
+                            <h1>Change Password</h1>
+                            <h:message for="password_form" errorClass="error" infoClass="info"
+                                       warnClass="warn"/>
+
+                            <label for="current_password" style="display: inline-block; margin: 0.4em">
+                                Current Password: *</label>
+                            <h:inputSecret id="current_password" style="width: 90%" 
+                                           value="#{ncgmsTemplateController.currentPassword}"/>
+                            <h:message for="current_password" errorClass="error" infoClass="info"/>
+                            <br />
+
+                            <label for="new_password" style="display: inline-block; 
+                                   margin: 0.4em">New Password: *</label>
+                            <h:inputSecret id="new_password" style="width: 90%" 
+                                           validator="#{ncgmsTemplateController.validatePasswords}" 
+                                           value="#{ncgmsTemplateController.newPassword}"/>
+                            <h:message for="new_password" errorClass="error" infoClass="info"/>
+                            <br />
+
+                            <label for="password_again" style="display: inline-block; margin: 0.4em">
+                                Re-enter Password: *</label>
+                            <h:inputSecret id="password_again" style="width: 90%" 
+                                           value="#{ncgmsTemplateController.newPasswordAgain}"/>
+                            <h:message for="password_again" errorClass="error" infoClass="info"/>
+                            <br />
+
+                            <h:commandLink action="#{ncgmsTemplateController.changePassword}">
+                                <h:graphicImage library="icons" name="save.png" 
+                                                style="margin: 0 2px -2px 0"/>Save Changes
+                                <f:ajax event="action" execute="@form" render="@all"/>
+                            </h:commandLink>
+                        </h:form> 
+                        <hr />
+                        <h:form id="cancel_service_form" style="padding: 0.6em;
+                                background-image: linear-gradient(#eee, #fff, #eee);
+                                border-radius: 0.8em;">       
+                            <h1>Cancel Services</h1>
+                            <h:message for="cancel_service_form" errorClass="error" infoClass="info"
+                                       warnClass="warn"/>
+                            <p>
+                                Please click the link below to cancel services.
+                            </p>
+                            <h:commandLink action="#{clientIndexController.cancelService}">
+                                <h:graphicImage library="icons" name="delete.png" 
+                                                style="margin: 0 2px -2px 0"/>Cancel Services
+                                <f:ajax event="action" execute="@form" render="@all"/>
+                            </h:commandLink>
+                        </h:form> 
+
+                    </ui:insert>
+                </div>
+                <div id="content" class="center_content">
+                    <ui:insert name="content">
+                        Content
+                    </ui:insert>
+                </div>
+            </div>
+            <div id="bottom">
+                <ui:insert name="bottom">
+                    <ui:include src="/includes/footer.xhtml"/>
+                </ui:insert>
+            </div>
+        </div>
+    </h:body>
+
+</html>
