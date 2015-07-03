@@ -10,8 +10,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Client;
+import ncgms.entities.Model;
+import ncgms.entities.Truck;
 
 /**
  * ClientsFacade
@@ -33,7 +34,7 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         Statement statement = connection.createStatement();
         String query = "UPDATE `Users` SET `isActive` = \"" + 1
-                + "\" WHERE `userID` = \"" + client.getClientID() + "\"";
+                + "\" WHERE `userID` = \"" + client.getUserID() + "\"";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -44,13 +45,14 @@ public class ClientsFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = null;
         int result = 0;
-        if(client.getPlateNumber().equals("None")){
+        if (client.getTruck().getPlateNumber().equals("None")) {
             query = "UPDATE `Clients` SET `plateNumber` = NULL"
-                + " WHERE `clientID` = \"" + client.getClientID() + "\"";
-        }else{
-            query = "UPDATE `Clients` SET `plateNumber` = \"" + client.getPlateNumber() + "\""
-                + " WHERE `clientID` = \"" + client.getClientID() + "\"";
-        }        
+                    + " WHERE `clientID` = \"" + client.getUserID() + "\"";
+        } else {
+            query = "UPDATE `Clients` SET `plateNumber` = \"" + client.getTruck().
+                    getPlateNumber() + "\""
+                    + " WHERE `clientID` = \"" + client.getUserID() + "\"";
+        }
         result += statement.executeUpdate(query);
         disconnect();
         return result;
@@ -90,14 +92,14 @@ public class ClientsFacade extends AbstractFacade {
         String query = "INSERT INTO `Clients` (`clientID`, `firstName`, "
                 + " `lastName`, `address`, `phone`, `email`, `plotName`, "
                 + " `dateAdded`, `idNumber`, `subcountyID`, `wantsToCancel`, "
-                + " `packageName`) VALUES (\"" + client.getClientID() + "\","
+                + " `packageName`) VALUES (\"" + client.getUserID() + "\","
                 + " \"" + client.getFirstName() + "\", \""
                 + client.getLastName() + " \", \"" + client.getAddress() + "\","
                 + " \"" + client.getPhone() + "\", \"" + client.getEmail()
                 + " \", \"" + client.getPlotName() + "\", \"" + client.getDateAdded()
                 + " \", \"" + client.getIdNumber() + "\", "
-                + " \"" + client.getSubcountyID() + "\", \"" + 0
-                + " \", \"" + client.getPackageName() + "\")";
+                + " \"" + client.getSubcounty().getSubcountyID() + "\", \"" + 0
+                + " \", \"" + client.getPackageObject().getPackageName() + "\")";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -107,7 +109,7 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         Statement statement = connection.createStatement();
         String query = "UPDATE `Clients` SET `wantsToCancel` = \"" + 1 + "\" "
-                + " WHERE `clientID` = \"" + client.getClientID() + "\"";
+                + " WHERE `clientID` = \"" + client.getUserID() + "\"";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -117,20 +119,26 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON "
-                + " `Clients`.`clientID` = `Users`.`userID` WHERE "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON "
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON"
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` WHERE"
                 + " `Users`.`userName` != \"admin\" ORDER BY `clientID` DESC";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"), resultSet.getInt("wantsToCancel"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"), resultSet.getInt("inService"),
+                    resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -140,7 +148,7 @@ public class ClientsFacade extends AbstractFacade {
         disconnect();
         return clientList;
     }
-  
+
     public boolean wantsToCancel() throws SQLException {
         connect();
         int wantsToCancel = 0;
@@ -161,22 +169,27 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT `Users`.`isActive`, `Clients`.* FROM `Users` "
+        String query = "SELECT * FROM `Users` "
                 + " INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `Trucks` ON `Clients`.`plateNumber` = "
                 + " `Trucks`.`plateNumber` WHERE `Trucks`.`plateNumber` = \""
-                + client.getPlateNumber() + "\"";
+                + client.getTruck().getPlateNumber() + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -186,25 +199,31 @@ public class ClientsFacade extends AbstractFacade {
         disconnect();
         return clientList;
     }
-    
+
     public List<Client> searchClientByPlotName(String searchTerm) throws SQLException {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON "
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `plotName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"), resultSet.getInt("wantsTooCancel"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -219,20 +238,26 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON"
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `firstName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set truck
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -247,20 +272,26 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON"
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `lastName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -275,21 +306,27 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON"
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `subcountyID` = \"" + new SubcountiesFacade().searchSubCountyByName(
                         searchTerm).getSubcountyID() + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -304,20 +341,26 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON"
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `address` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -332,20 +375,26 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON"
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `plateNumber` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -360,20 +409,26 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON"
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `phone` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -388,20 +443,26 @@ public class ClientsFacade extends AbstractFacade {
         connect();
         ArrayList<Client> clientList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON"
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `email` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -415,21 +476,26 @@ public class ClientsFacade extends AbstractFacade {
     public Client searchClientByClientID(int searchTerm) throws SQLException {
         connect();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Clients` INNER JOIN `Users` ON"
-                + " `Clients`.`clientID` = `Users`.`userID` "
+        String query = "SELECT * FROM `Users` INNER JOIN `Clients` ON"
+                + " `Users`.`userID` = `Clients`.`clientID` LEFT JOIN `Trucks` ON "
+                + " `Clients`.`plateNumber` = `Trucks`.`plateNumber` "
                 + " WHERE `Clients`.`clientID` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         if (resultSet.next()) {
             this.client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNumber"),
-                    resultSet.getInt("isActive"), resultSet.getInt("wantsToCancel"));
-            this.client.setUsername(resultSet.getString("userName"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
+            //Set client
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.client.setPlateNumber("None");
+                this.client.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.client.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -444,7 +510,7 @@ public class ClientsFacade extends AbstractFacade {
         int result = 0;
         Statement statement = connection.createStatement();
         String query = "DELETE FROM `Users` WHERE `userID` = \""
-                + this.client.getClientID() + "\"";
+                + this.client.getUserID() + "\"";
         result = statement.executeUpdate(query);
         disconnect();
         return result;

@@ -14,6 +14,7 @@ import java.util.List;
 import ncgms.daos.AbstractFacade;
 import ncgms.entities.Client;
 import ncgms.entities.Driver;
+import ncgms.entities.Model;
 import ncgms.entities.Tout;
 import ncgms.entities.Truck;
 
@@ -42,15 +43,15 @@ public class TrucksFacade extends AbstractFacade {
         while (resultSet.next()) {
             this.truck = new Truck(resultSet.getString("plateNumber"),
                     resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("modelID"));
+                    new Model(resultSet.getInt("modelID"), null));
             truckList.add(this.truck);
         }
 
         // Add the clients to each truck
         for (Truck newTruck : truckList) {
-            // Create a client and set plateNumber
+            // Create a client and set truck
             Client client = new Client();
-            client.setPlateNumber(newTruck.getPlateNumber());
+            client.setTruck(newTruck);
 
             // Select all the clients served by this truck
             ClientsFacade clientsFacade = new ClientsFacade(client);
@@ -62,7 +63,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create tout and set plate number
             Tout tout = new Tout();
-            tout.setPlateNumber(newTruck.getPlateNumber());
+            tout.setTruck(newTruck);
             // Select all the touts who work with this truck
             ToutsFacade toutsFacade = new ToutsFacade(tout);
             newTruck.setToutList(toutsFacade.loadTruckTouts());
@@ -73,7 +74,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create a new driver and set the plateNumber
             Driver driver = new Driver();
-            driver.setPlateNumber(newTruck.getPlateNumber());
+            driver.setTruck(newTruck);
             // Load the driver of this truck
             DriversFacade driversFacade = new DriversFacade(driver);
             newTruck.setDriver(driversFacade.loadTruckDriver());
@@ -147,7 +148,7 @@ public class TrucksFacade extends AbstractFacade {
         String query = "INSERT INTO `Trucks` (`plateNumber`, `inService`, "
                 + " `dateAdded`, `modelID`) VALUES(\"" + truck.getPlateNumber()
                 + "\", \"" + truck.getInService() + "\", \"" + new Date().getTime()
-                + "\", \"" + truck.getModelID() + "\")";
+                + "\", \"" + truck.getModel().getModelID() + "\")";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -163,7 +164,7 @@ public class TrucksFacade extends AbstractFacade {
         while (resultSet.next()) {
             this.truck = new Truck(resultSet.getString("plateNumber"),
                     resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("modelID"));
+                    new Model(resultSet.getInt("modelID"), null));
             truckList.add(this.truck);
         }
 
@@ -171,7 +172,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create a client and set plateNumber
             Client client = new Client();
-            client.setPlateNumber(newTruck.getPlateNumber());
+            client.getTruck().setPlateNumber(newTruck.getPlateNumber());
 
             // Select all the clients served by this truck
             ClientsFacade clientsFacade = new ClientsFacade(client);
@@ -183,7 +184,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create tout and set plate number
             Tout tout = new Tout();
-            tout.setPlateNumber(newTruck.getPlateNumber());
+            tout.setTruck(newTruck);
             // Select all the touts who work with this truck
             ToutsFacade toutsFacade = new ToutsFacade(tout);
             newTruck.setToutList(toutsFacade.loadTruckTouts());
@@ -194,7 +195,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create a new driver and set the plateNumber
             Driver driver = new Driver();
-            driver.setPlateNumber(newTruck.getPlateNumber());
+            driver.setTruck(newTruck);
             // Load the driver of this truck
             DriversFacade driversFacade = new DriversFacade(driver);
             newTruck.setDriver(driversFacade.loadTruckDriver());
@@ -214,7 +215,7 @@ public class TrucksFacade extends AbstractFacade {
         while (resultSet.next()) {
             this.truck = new Truck(resultSet.getString("plateNumber"),
                     resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("modelID"));
+                    new Model(resultSet.getInt("modelID"), null));
             truckList.add(this.truck);
         }
 
@@ -222,7 +223,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create a client and set plateNumber
             Client client = new Client();
-            client.setPlateNumber(newTruck.getPlateNumber());
+            client.setTruck(newTruck);
 
             // Select all the clients served by this truck
             ClientsFacade clientsFacade = new ClientsFacade(client);
@@ -234,7 +235,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create tout and set plate number
             Tout tout = new Tout();
-            tout.setPlateNumber(newTruck.getPlateNumber());
+            tout.setTruck(newTruck);
             // Select all the touts who work with this truck
             ToutsFacade toutsFacade = new ToutsFacade(tout);
             newTruck.setToutList(toutsFacade.loadTruckTouts());
@@ -245,7 +246,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create a new driver and set the plateNumber
             Driver driver = new Driver();
-            driver.setPlateNumber(newTruck.getPlateNumber());
+            driver.setTruck(newTruck);
             // Load the driver of this truck
             DriversFacade driversFacade = new DriversFacade(driver);
             newTruck.setDriver(driversFacade.loadTruckDriver());

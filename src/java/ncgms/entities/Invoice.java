@@ -27,7 +27,6 @@ public class Invoice {
     private double balance = 0;
     private int isPaid = 0;
     // Relationships
-    private int clientID = 0; 
     Client client = null;
     // Flags
     private boolean editable = false;
@@ -39,31 +38,9 @@ public class Invoice {
     public Invoice() {
     }
 
-    public Invoice(long dateAdded, double amountDue, int isPaid) {
-        this.dateAdded = dateAdded;
-        this.amountDue = amountDue;
-        this.isPaid = isPaid;
-    }
-
-    public Invoice(long dateAdded, double amountDue, int isPaid, int clientID) {
-        this.dateAdded = dateAdded;
-        this.amountDue = amountDue;
-        this.isPaid = isPaid;
-        this.clientID = clientID;
-    }
-    
-    public Invoice(int invoiceID, long dateAdded, double amountDue, int isPaid,
-            int clientID) {
-        this.invoiceID = invoiceID;
-        this.dateAdded = dateAdded;
-        this.amountDue = amountDue;
-        this.isPaid = isPaid;
-        this.clientID = clientID;
-    }
-
     public Invoice(int invoiceID, long dateAdded, long dateDue, long datePaid,
             double amountDue, double amountPaid, double balance, 
-            int isPaid, int clientID) {
+            int isPaid, Client client) {
         this.invoiceID = invoiceID;
         this.dateAdded = dateAdded;
         this.dateDue = dateDue;
@@ -72,7 +49,7 @@ public class Invoice {
         this.amountPaid = amountPaid;
         this.balance = balance;
         this.isPaid = isPaid;
-        this.clientID = clientID;
+        this.client = client;
     }
 
 
@@ -147,14 +124,6 @@ public class Invoice {
         this.amountDue = amountDue;
     }
 
-    public int getClientID() {
-        return clientID;
-    }
-
-    public void setClientID(int clientID) {
-        this.clientID = clientID;
-    }
-
     public Client getClient() {
         return client;
     }
@@ -219,7 +188,6 @@ public class Invoice {
                 + "\nAmount Due - " + amountDue
                 + "\nAmount Paid - " + amountPaid
                 + "\nBalance - " + balance
-                + "\nIs Paid - " + isPaid
-                + "\nClient ID - " + clientID;
+                + "\nIs Paid - " + isPaid;
     }
 }

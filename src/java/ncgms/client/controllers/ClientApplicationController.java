@@ -26,11 +26,14 @@ import javax.validation.constraints.Pattern;
 
 import ncgms.entities.Client;
 import ncgms.entities.User;
+import ncgms.entities.Package;
 import ncgms.util.PasswordHasher;
 import ncgms.daos.ClientsFacade;
 import ncgms.daos.PackagesFacade;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.UsersFacade;
+import ncgms.entities.Subcounty;
+import ncgms.entities.Truck;
 import ncgms.util.SMSSender;
 
 /**
@@ -168,17 +171,20 @@ public class ClientApplicationController implements Serializable {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                         username + " is already taken, try another username.",
                         username + " is already taken, try another username.");
-                FacesContext.getCurrentInstance().addMessage("client_application_form:username", 
+                FacesContext.getCurrentInstance().addMessage("client_application_form:username",
                         facesMessage);
                 return;
             }
             // Create a new user
             user = new User(username, hashPassword(), 0);
             usersFacade.setUser(user);
-            Client client = new Client(firstName, lastName, address, phone,
-                    email, plotName, new Date().getTime(), Integer.valueOf(idNumber),
-                    new SubcountiesFacade().loadSubcountyIDsMap().get(subcounty),
-                    packageName);
+            Client client = new Client(user.getUserID(), username, user.getPasswordHash(),
+                    0, firstName, lastName, address, phone, email, plotName,
+                    new Date().getTime(), Integer.valueOf(idNumber), 0,
+                    new Subcounty(new SubcountiesFacade().searchSubCountyByName(subcounty).
+                            getSubcountyID(), subcounty), new Truck("None", 0, 0, null),
+                    new Package(packageName, 0));
+
             ClientsFacade clientsFacade = new ClientsFacade(client);
 
             //Check whether client already exists
@@ -191,7 +197,7 @@ public class ClientApplicationController implements Serializable {
                     // Get the userID and set it as clientID
                     int userID = usersFacade.loadUserID();
                     // Set the clientID
-                    clientsFacade.getClient().setClientID(userID);
+                    clientsFacade.getClient().setUserID(userID);
 
                     // Now add client to database
                     int clientResult = clientsFacade.insertClient();

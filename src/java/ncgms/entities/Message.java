@@ -18,26 +18,18 @@ public class Message {
     private long dateAdded = 0;
     private int isRead = 0;
     private String realDateAdded = null;
-
-    private int userID = 0;
+    // Relationships
     private User user = null;
 
     public Message() {
     }
 
-    public Message(String message, long dateAdded, int isRead, int userID) {
-        this.message = message;
-        this.dateAdded = dateAdded;
-        this.isRead = isRead;
-        this.userID = userID;
-    }
-
-    public Message(int messageID, String message, long dateAdded, int isRead, int userID) {
+    public Message(int messageID, String message, long dateAdded, int isRead, User user) {
         this.messageID = messageID;
         this.message = message;
         this.dateAdded = dateAdded;
         this.isRead = isRead;
-        this.userID = userID;
+        this.user = user;
     }
 
     public int getMessageID() {
@@ -62,14 +54,6 @@ public class Message {
 
     public void setDateAdded(long dateAdded) {
         this.dateAdded = dateAdded;
-    }
-
-    public int getUserID() {
-        return userID;
-    }
-
-    public void setUserID(int userID) {
-        this.userID = userID;
     }
 
     public String getRealDateAdded() {
@@ -105,8 +89,9 @@ public class Message {
     public String toString() {
         return "\nMessage ID - " + messageID
                 + "\nMessage - " + message
-                + "\nDate Added - " + new Date(dateAdded).toString()
-                + "\nUser ID- " + userID;
+                + "\nIs Read - " + isRead
+                + "\nDate Added - " + realDateAdded
+                + "\nUser - " + user;
     }
 
 }

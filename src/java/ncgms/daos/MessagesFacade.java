@@ -9,8 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Message;
+import ncgms.entities.User;
 
 /**
  *
@@ -36,14 +36,14 @@ public class MessagesFacade extends AbstractFacade {
         String query = "SELECT `messageID`, `message`, `Messages`.`dateAdded`, "
                 + "`Messages`.`isRead`, `Messages`.`userID` FROM"
                 + " `Messages` INNER JOIN `Users` ON `Messages`.`userID` = "
-                + " `Users`.`userID` WHERE `Messages`.`userID` = \"" + 
-                this.message.getUserID() + "\" ORDER BY `messageID` DESC";
+                + " `Users`.`userID` WHERE `Messages`.`userID` = \""
+                + this.message.getUser().getUserID() + "\" ORDER BY `messageID` DESC";
 
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.message = new Message(resultSet.getInt("messageID"), 
+            this.message = new Message(resultSet.getInt("messageID"),
                     resultSet.getString("message"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("isRead"), resultSet.getInt("userID"));
+                    resultSet.getInt("isRead"), new User(0, null, null, resultSet.getInt("userID")));
             userMessageList.add(this.message);
         }
         disconnect();
@@ -54,9 +54,9 @@ public class MessagesFacade extends AbstractFacade {
         connect();
         Statement statement = connection.createStatement();
         String query = "INSERT INTO `Messages`(`message`, `dateAdded`, `isRead`, "
-                + "`userID`) VALUES(\"" + message.getMessage() + "\", \"" 
-                + message.getDateAdded() + "\", \"" + message.getIsRead() 
-                + "\", \"" + message.getUserID() + "\" )";
+                + "`userID`) VALUES(\"" + message.getMessage() + "\", \""
+                + message.getDateAdded() + "\", \"" + message.getIsRead()
+                + "\", \"" + message.getUser().getUserID() + "\" )";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;

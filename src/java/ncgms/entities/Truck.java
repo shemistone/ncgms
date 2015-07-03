@@ -21,22 +21,15 @@ public class Truck {
     private long dateAdded = 0;
     private String realDateAdded = null;
     // Relationships
-    private int modelID = 0;
-    //private Model model = null;
+    private Model model = null;
+    private Driver driver = null;
     private List<Client> clientList = new ArrayList<>();
     private List<Tout> toutList = new ArrayList<>();
-    private Driver driver = null;
 
     /**
      * Default constructor
      */
     public Truck() {
-    }
-
-    public Truck(String plateNumber, int inService, int modelID) {
-        this.plateNumber = plateNumber;
-        this.inService = inService;
-        this.modelID = modelID;
     }
 
     /**
@@ -45,12 +38,21 @@ public class Truck {
      * @param plateNumber the plateNumber to set
      * @param inService the inService to set
      * @param dateAdded the dateAdded to set
-     * @param modelID the modelID to set
+     * @param model
      */
-    public Truck(String plateNumber, int inService, long dateAdded, int modelID) {
+    public Truck(String plateNumber, int inService, long dateAdded, Model model) {
         this.plateNumber = plateNumber;
         this.inService = inService;
-        this.modelID = modelID;
+        this.dateAdded = dateAdded;
+        this.model = model;
+    }
+
+    public Truck(String plateNumber, int inService, long dateAdded,
+            List<Client> clientList, List<Tout> toutList) {
+        this.plateNumber = plateNumber;
+        this.inService = inService;
+        this.clientList = clientList;
+        this.toutList = toutList;
     }
 
     public List<Client> getClientList() {
@@ -124,28 +126,18 @@ public class Truck {
         this.realDateAdded = realDateAdded;
     }
 
-    /**
-     * Get the modelID
-     *
-     * @return the modelID
-     */
-    public int getModelID() {
-        return modelID;
+    public Model getModel() {
+        return model;
     }
 
-    /**
-     * Set the modelID
-     * @param modelID the modelID to set
-     */
-    public void setModelID(int modelID) {
-        this.modelID = modelID;
+    public void setModel(Model model) {
+        this.model = model;
     }
 
     @Override
     public String toString() {
         return "\nPlate Number - " + plateNumber
                 + "\nIn Service - " + inService
-                + "\nDate Added - " + new Date(dateAdded).toString()
-                + "\nModel ID - " + modelID;
+                + "\nDate Added - " + realDateAdded;
     }
 }

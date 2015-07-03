@@ -98,7 +98,7 @@
                     <f:facet name="header">
                         <h:outputText value="Model Name" rendered="#{adminTruckController.truckList.size() != 0}"/>
                     </f:facet>
-                    <h:outputText value="#{adminTruckController.modelNamesMap.get(truckElement.modelID)}"/>
+                    <h:outputText value="#{adminTruckController.modelNamesMap.get(truckElement.model.modelID)}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">

@@ -16,9 +16,7 @@ public class OrderDetail {
     private int quantity = 0;
     private double price = 0.0;
     // Relationships
-    private int orderID;
     private ContainerOrder containerOrder = null;
-    private int containerID = 0;
     Container container = null;
 
     /**
@@ -27,26 +25,13 @@ public class OrderDetail {
     public OrderDetail() {
     }
 
-    /**
-     * Overloaded constructor
-     *
-     * @param quantity
-     * @param price
-     * @param containerID
-     */
-    public OrderDetail(int quantity, double price, int containerID) {
-        this.quantity = quantity;
-        this.price = price;
-        this.containerID = containerID;
-    }
-
-    public OrderDetail(int orderDetailID, int quantity, double price,
-            int containerID, int orderID) {
+    public OrderDetail(int orderDetailID, int quantity, double price, Container container, 
+            ContainerOrder containerOrder) {
         this.orderDetailID = orderDetailID;
         this.quantity = quantity;
         this.price = price;
-        this.containerID = containerID;
-        this.orderID = orderID;
+        this.container = container;
+        this.containerOrder = containerOrder;
     }
 
     public int getOrderDetailID() {
@@ -73,22 +58,6 @@ public class OrderDetail {
         this.price = price;
     }
 
-    public int getContainerID() {
-        return containerID;
-    }
-
-    public void setContainerID(int containerID) {
-        this.containerID = containerID;
-    }
-
-    public int getOrderID() {
-        return orderID;
-    }
-
-    public void setOrderID(int orderID) {
-        this.orderID = orderID;
-    }
-
     public Container getContainer() {
         return container;
     }
@@ -109,8 +78,6 @@ public class OrderDetail {
     public String toString() {
         return "\nOrder Detail ID - " + orderDetailID
                 + "\nquantity - " + quantity
-                + "\nPrice - " + price
-                + "\nContainer ID - " + containerID
-                + "\nOrder ID- " + orderID;
+                + "\nPrice - " + price;
     }
 }

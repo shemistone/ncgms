@@ -62,7 +62,7 @@ public class MessageController implements Serializable {
 
             // Create a new Message MessagesFacade for loading messages
             Message message = new Message();
-            message.setUserID(user.getUserID());
+            message.setUser(user);
             MessagesFacade messagesFacade = new MessagesFacade(message);
             this.messageList = messagesFacade.loadUserMessages();
 

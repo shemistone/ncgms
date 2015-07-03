@@ -44,10 +44,10 @@ public class ClientIndexController implements Serializable {
 
             User user = new LogInLogOutController().getUserFromSession();
             Client client = new Client();
-            client.setClientID(user.getUserID());
-             // Check if client has any invoices
+            client.setUserID(user.getUserID());
+            // Check if client has any invoices
             Invoice invoice = new Invoice();
-            invoice.setClientID(user.getUserID());
+            invoice.setClient((Client) user);
             InvoicesFacade invoicesFacade = new InvoicesFacade(invoice);
             if (!invoicesFacade.loadClientInvoices().isEmpty()) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
@@ -64,14 +64,14 @@ public class ClientIndexController implements Serializable {
                 // Inform the Admin
                 // Get all client attributes
                 client = clientsFacade.searchClientByClientID(user.getUserID());
-                Message message = new Message(client.getPlotName() 
-                        + " wants to cancel garbage collection services", 
-                        new Date().getTime(), 0, usersFacade.loadAdminUserID());
+                Message message = new Message(0, client.getPlotName()
+                        + " wants to cancel garbage collection services",
+                        new Date().getTime(), 0, new User(0, null, null, usersFacade.loadAdminUserID()));
                 MessagesFacade messagesFacade = new MessagesFacade(message);
                 messagesFacade.insertMessage();
                 // Log user out
                 new LogInLogOutController().logOut();
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
                         "Your account has been deactivated.",
                         "Your account has been deactivated.");
                 FacesContext.getCurrentInstance().addMessage("cancel_service_form", facesMessage);

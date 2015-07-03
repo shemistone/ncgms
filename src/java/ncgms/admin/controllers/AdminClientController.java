@@ -67,7 +67,7 @@ public class AdminClientController implements Serializable {
 
             // Load subcounty names into map
             SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
+            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
 
             ClientsFacade clientsFacade = new ClientsFacade();
             this.clientList = clientsFacade.loadAllClients();
@@ -117,7 +117,7 @@ public class AdminClientController implements Serializable {
 
             // Load subcounty names into map
             SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
+            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
 
             // Set the number of pages
             this.noOfPages = this.clientList.size() / 10;
@@ -254,7 +254,7 @@ public class AdminClientController implements Serializable {
         }
     }
 
-    public void removeClient(Client client) {
+    public void removeClient(Client client) {//System.out.print(client);
         try {
             ClientsFacade clientsFacade = new ClientsFacade(client);
             int result = clientsFacade.removeClient();
@@ -292,7 +292,6 @@ public class AdminClientController implements Serializable {
 
     public void searchClients() {
         try {
-            System.out.print(searchTerm);
             ClientsFacade clientsFacade = new ClientsFacade();
 
             switch (this.searchBy) {
@@ -345,7 +344,7 @@ public class AdminClientController implements Serializable {
     public void saveClientChanges(Client client) {
         try {
             // Update
-            client.setPlateNumber(client.getPlateNumber());
+            client.setTruck(client.getTruck());
             ClientsFacade clientsFacade = new ClientsFacade();
             int result = clientsFacade.updateClient(client);
             if (result == 1) {

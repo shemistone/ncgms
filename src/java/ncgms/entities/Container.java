@@ -20,10 +20,10 @@ public class Container {
     private String fileName = null;
     private double price = 0.0;
     private int noOfContainers = 0;
-    private String realPrice = null;    
+    private String realPrice = null;
     // Relationships
     private List<OrderDetail> orderDetailList = new ArrayList<>();
-    
+
     private boolean editable = false;
 
     /**
@@ -32,32 +32,32 @@ public class Container {
     public Container() {
     }
 
-    public Container(String fileName, double price) {
-        this.fileName = fileName;
-        this.price = price;
-    }
-
-    public Container(String fileName, String name, int noOfContainers, double price) {
-        this.fileName = fileName;
-        this.name = name;
-        this.noOfContainers = noOfContainers;
-        this.price = price;
-    }
-
     /**
      * Overloaded constructor
      *
      * @param containerID
      * @param name
      * @param fileName
+     * @param noOfContainers
      * @param price
      */
-    public Container(int containerID, String name, String fileName, int noOfContainers, double price) {
+    public Container(int containerID, String name, String fileName, int noOfContainers,
+            double price) {
         this.containerID = containerID;
         this.name = name;
         this.fileName = fileName;
         this.noOfContainers = noOfContainers;
         this.price = price;
+    }
+    
+    public Container(int containerID, String name, String fileName, int noOfContainers,
+            double price, List<OrderDetail> orderDetailList) {
+        this.containerID = containerID;
+        this.name = name;
+        this.fileName = fileName;
+        this.noOfContainers = noOfContainers;
+        this.price = price;
+        this.orderDetailList = orderDetailList;
     }
 
     public List<OrderDetail> getOrderDetailList() {
@@ -126,11 +126,11 @@ public class Container {
     }
 
     @Override
-    public String toString(){
-        return "\nContainer ID - " + containerID +
-                "\nName - " + name +
-                "\nFile Name - " + fileName +
-                "\nNo of Containers" + noOfContainers +
-                "\nPrice - " + price;
+    public String toString() {
+        return "\nContainer ID - " + containerID
+                + "\nName - " + name
+                + "\nFile Name - " + fileName
+                + "\nNo of Containers" + noOfContainers
+                + "\nPrice - " + price;
     }
 }

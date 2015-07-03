@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * Represents one record in the Users table
+ *
  * @author root
  */
 public class User {
@@ -18,7 +19,7 @@ public class User {
     protected String username = null;
     protected String passwordHash = null;
     protected int isActive = 0;
-    
+
     List<Complaint> complaintList = new ArrayList<>();
     List<Message> messageList = new ArrayList<>();
 
@@ -27,27 +28,30 @@ public class User {
      */
     public User() {
     }
-    
+
     /**
      * Overloaded constructor
+     *
      * @param username the username to set
      * @param passwordHash the password hash to set
      * @param isActive the status to set { 0 or 1 }
      */
-    public User(String username, String passwordHash, int isActive){
+    public User(String username, String passwordHash, int isActive) {
         this.username = username;
         this.passwordHash = passwordHash;
         this.isActive = isActive;
     }
 
-     public User(int userID, String username, String passwordHash, int isActive){
+    public User(int userID, String username, String passwordHash, int isActive) {
         this.userID = userID;
         this.username = username;
         this.passwordHash = passwordHash;
         this.isActive = isActive;
     }
+
     /**
      * Get the userID
+     *
      * @return the userID
      */
     public int getUserID() {
@@ -56,14 +60,16 @@ public class User {
 
     /**
      * Set the userID
+     *
      * @param userID the userID to set
      */
     public void setUserID(int userID) {
         this.userID = userID;
     }
-    
+
     /**
      * Get the username
+     *
      * @return the username
      */
     public String getUsername() {
@@ -72,6 +78,7 @@ public class User {
 
     /**
      * Set the username
+     *
      * @param username the username to set
      */
     public void setUsername(String username) {
@@ -80,6 +87,7 @@ public class User {
 
     /**
      * Get the passwordHash
+     *
      * @return the passwordHash
      */
     public String getPasswordHash() {
@@ -88,6 +96,7 @@ public class User {
 
     /**
      * Set the passwordHash
+     *
      * @param passwordHash the passwordHash to set
      */
     public void setPasswordHash(String passwordHash) {
@@ -96,6 +105,7 @@ public class User {
 
     /**
      * Get the status of the user
+     *
      * @return the status of the user { 0 | 1}
      */
     public int getIsActive() {
@@ -104,6 +114,7 @@ public class User {
 
     /**
      * Set the user's status
+     *
      * @param isActive the status to set { 0 | 1 }
      */
     public void setIsActive(int isActive) {
@@ -125,13 +136,13 @@ public class User {
     public void setMessageList(List<Message> messageList) {
         this.messageList = messageList;
     }
-    
+
     @Override
-    public String toString(){
-        return "\nUser ID - " + userID + 
-               "\nUsername - " + username +
-               "\npasswordHash - " + passwordHash +
-               "\nisActive - " + isActive;
+    public String toString() {
+        return "\nUser ID - " + userID
+                + "\nUsername - " + username
+                + "\npasswordHash - " + passwordHash
+                + "\nisActive - " + isActive;
     }
 
 }

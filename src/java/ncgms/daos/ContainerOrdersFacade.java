@@ -11,11 +11,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Client;
 import ncgms.entities.ContainerOrder;
 import ncgms.entities.Message;
 import ncgms.entities.OrderDetail;
+import ncgms.entities.User;
 
 /**
  *
@@ -36,7 +36,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         connect();
         ArrayList<ContainerOrder> containerOrderList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.`orderID`, "
+        String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.*, "
                 + " `ContainerOrders`.`dateAdded`, `ContainerOrders`.`totalPrice`,"
                 + " `ContainerOrders`.`isApproved`, `ContainerOrders`.`clientID` FROM "
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
@@ -48,18 +48,16 @@ public class ContainerOrdersFacade extends AbstractFacade {
         while (resultSet.next()) {
             // Create new client
             Client client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNUmber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), resultSet.getInt("clientID"));
-            // Set the  client of the containerOrder
-            this.containerOrder.setClient(client);
+                    resultSet.getInt("isApproved"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 
@@ -68,7 +66,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
             // OrderDetail to set
             OrderDetail orderDetail = new OrderDetail();
             // Set the orderID
-            orderDetail.setOrderID(newContainerOrder.getOrderID());
+            orderDetail.setContainerOrder(newContainerOrder);
             OrderDetailsFacade orderDetailsFacade = new OrderDetailsFacade(orderDetail);
             newContainerOrder.setOrderDetailList(orderDetailsFacade.loadContainerOrderOrderDetails());
         }
@@ -86,24 +84,22 @@ public class ContainerOrdersFacade extends AbstractFacade {
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `ContainerOrders` ON `Clients`.`clientID` = "
                 + "`ContainerOrders`.`clientID` WHERE `Users`.`isActive` = \"" + 1
-                + "\" AND `ContainerOrders`.`clientID` = \"" + containerOrder.getClientID() + "\""
-                + " ORDER BY `ContainerOrders`.`orderID` DESC";
+                + "\" AND `ContainerOrders`.`clientID` = \"" + containerOrder.getClient().
+                getUserID() + "\" ORDER BY `ContainerOrders`.`orderID` DESC";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             // Create new client
             Client client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNUmber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), resultSet.getInt("clientID"));
-            // Set the  client of the containerOrder
-            this.containerOrder.setClient(client);
+                    resultSet.getInt("isApproved"), client, null);
             clientContainerOrderList.add(this.containerOrder);
         }
 
@@ -112,7 +108,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
             // OrderDetail to set
             OrderDetail orderDetail = new OrderDetail();
             // Set the orderID
-            orderDetail.setOrderID(newContainerOrder.getOrderID());
+            orderDetail.setContainerOrder(newContainerOrder);
             OrderDetailsFacade orderDetailsFacade = new OrderDetailsFacade(orderDetail);
             newContainerOrder.setOrderDetailList(orderDetailsFacade.loadContainerOrderOrderDetails());
         }
@@ -133,12 +129,22 @@ public class ContainerOrdersFacade extends AbstractFacade {
                     + " has been approved, the items will be delivered during "
                     + " the next garbage collection schedule";
             // Create message object
-            Message message = new Message(messageContent, new Date().getTime(),
-                    0, containerOrder.getClientID());
+            Message message = new Message(0, messageContent, new Date().getTime(),
+                    0, new User(containerOrder.getClient().getUserID(), null, null, 0));
             // Insert message
             MessagesFacade messagesFacade = new MessagesFacade(message);
             result = messagesFacade.insertMessage();
         }
+        disconnect();
+        return result;
+    }
+
+    public int removeContainerOrder() throws SQLException {
+        connect();
+        Statement statement = connection.createStatement();
+        String query = "DELETE FROM `ContainerOrders` WHERE `orderID` = \""
+                + this.containerOrder.getOrderID() + "\"";
+        int result = statement.executeUpdate(query);
         disconnect();
         return result;
     }
@@ -149,7 +155,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         String query = "INSERT INTO `ContainerOrders`(`dateAdded`, `totalPrice`, "
                 + " `isApproved`, `clientID`) VALUES(\"" + containerOrder.getDateAdded()
                 + " \", \"" + containerOrder.getTotalPrice() + "\", \"" + 0 + "\", \""
-                + containerOrder.getClientID() + "\")";
+                + containerOrder.getClient().getUserID() + "\")";
         int orderResult = statement.executeUpdate(query);
         int orderDetailResult = 0;
         if (orderResult == 1) {
@@ -168,7 +174,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
             // Insert the orderDetail objects
             for (OrderDetail orderDetail : containerOrder.getOrderDetailList()) {
                 // Set the orderID
-                orderDetail.setOrderID(containerOrder.getOrderID());
+                orderDetail.setContainerOrder(containerOrder);
                 // Add the corresponding OrderDetail objects
                 OrderDetailsFacade orderDetailsFacade = new OrderDetailsFacade(orderDetail);
                 orderDetailResult = orderDetailsFacade.insertOrderDetail();
@@ -186,13 +192,13 @@ public class ContainerOrdersFacade extends AbstractFacade {
         ArrayList<ContainerOrder> monthlyUnapprovedClientContainerOrderList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `ContainerOrders` WHERE `clientID` = \""
-                + client.getClientID() + "\" AND"
+                + client.getUserID() + "\" AND"
                 + " `dateAdded` > \"" + pastDate + "\" AND `isApproved` = \"" + 0 + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), resultSet.getInt("clientID"));
+                    resultSet.getInt("isApproved"), client, null);
             // Add the containerOrders to clientContainerOrderList
             monthlyUnapprovedClientContainerOrderList.add(this.containerOrder);
         }
@@ -226,18 +232,16 @@ public class ContainerOrdersFacade extends AbstractFacade {
         while (resultSet.next()) {
             // Create new client
             Client client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNUmber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), resultSet.getInt("clientID"));
-            // Set the  client of the containerOrder
-            this.containerOrder.setClient(client);
+                    resultSet.getInt("isApproved"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 
@@ -246,7 +250,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
             // OrderDetail to set
             OrderDetail orderDetail = new OrderDetail();
             // Set the orderID
-            orderDetail.setOrderID(newContainerOrder.getOrderID());
+            orderDetail.setContainerOrder(newContainerOrder);
             OrderDetailsFacade orderDetailsFacade = new OrderDetailsFacade(orderDetail);
             newContainerOrder.setOrderDetailList(orderDetailsFacade.loadContainerOrderOrderDetails());
         }
@@ -272,18 +276,16 @@ public class ContainerOrdersFacade extends AbstractFacade {
         while (resultSet.next()) {
             // Create new client
             Client client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNUmber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), resultSet.getInt("clientID"));
-            // Set the  client of the containerOrder
-            this.containerOrder.setClient(client);
+                    resultSet.getInt("isApproved"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 
@@ -292,7 +294,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
             // OrderDetail to set
             OrderDetail orderDetail = new OrderDetail();
             // Set the orderID
-            orderDetail.setOrderID(newContainerOrder.getOrderID());
+            orderDetail.setContainerOrder(newContainerOrder);
             OrderDetailsFacade orderDetailsFacade = new OrderDetailsFacade(orderDetail);
             newContainerOrder.setOrderDetailList(orderDetailsFacade.loadContainerOrderOrderDetails());
         }
@@ -318,18 +320,16 @@ public class ContainerOrdersFacade extends AbstractFacade {
         while (resultSet.next()) {
             // Create new client
             Client client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNUmber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), resultSet.getInt("clientID"));
-            // Set the  client of the containerOrder
-            this.containerOrder.setClient(client);
+                    resultSet.getInt("isApproved"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 
@@ -338,7 +338,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
             // OrderDetail to set
             OrderDetail orderDetail = new OrderDetail();
             // Set the orderID
-            orderDetail.setOrderID(newContainerOrder.getOrderID());
+            orderDetail.setContainerOrder(newContainerOrder);
             OrderDetailsFacade orderDetailsFacade = new OrderDetailsFacade(orderDetail);
             newContainerOrder.setOrderDetailList(orderDetailsFacade.loadContainerOrderOrderDetails());
         }
@@ -364,18 +364,16 @@ public class ContainerOrdersFacade extends AbstractFacade {
         while (resultSet.next()) {
             // Create new client
             Client client = new Client(resultSet.getInt("clientID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("address"), resultSet.getString("phone"),
-                    resultSet.getString("email"), resultSet.getString("plotName"),
-                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
-                    resultSet.getInt("subcountyID"), resultSet.getString("plateNUmber"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("address"),
+                    resultSet.getString("phone"), resultSet.getString("email"),
+                    resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
+                    resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), resultSet.getInt("clientID"));
-            // Set the  client of the containerOrder
-            this.containerOrder.setClient(client);
+                    resultSet.getInt("isApproved"), client, null);
             containerOrderList.add(containerOrder);
         }
 
@@ -384,7 +382,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
             // OrderDetail to set
             OrderDetail orderDetail = new OrderDetail();
             // Set the orderID
-            orderDetail.setOrderID(newContainerOrder.getOrderID());
+            orderDetail.setContainerOrder(newContainerOrder);
             OrderDetailsFacade orderDetailsFacade = new OrderDetailsFacade(orderDetail);
             newContainerOrder.setOrderDetailList(orderDetailsFacade.loadContainerOrderOrderDetails());
         }

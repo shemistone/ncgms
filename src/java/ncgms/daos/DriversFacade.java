@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Driver;
+import ncgms.entities.Model;
+import ncgms.entities.Truck;
 
 /**
  * DriversFacade
@@ -51,23 +52,23 @@ public class DriversFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = null;
         int result = 0;
-        if(driver.getPlateNumber().equals("None")){
-             query = "UPDATE `Drivers` SET `plateNumber` = NULL"
-                + " WHERE `driverID` = \"" + driver.getDriverID() + "\""; 
-        }else{
-           query = "UPDATE `Drivers` SET `plateNumber` = \"" + driver.getPlateNumber() + "\""
-                + " WHERE `driverID` = \"" + driver.getDriverID() + "\""; 
+        if (driver.getTruck().getPlateNumber().equals("None")) {
+            query = "UPDATE `Drivers` SET `plateNumber` = NULL"
+                    + " WHERE `driverID` = \"" + driver.getUserID() + "\"";
+        } else {
+            query = "UPDATE `Drivers` SET `plateNumber` = \"" + driver.getTruck().getPlateNumber() + "\""
+                    + " WHERE `driverID` = \"" + driver.getUserID() + "\"";
         }
         result += statement.executeUpdate(query);
         disconnect();
         return result;
     }
-    
+
     public int approveApplication() throws SQLException {
         connect();
         Statement statement = connection.createStatement();
         String query = "UPDATE `Users` SET `isActive` = \"" + 1 + "\" WHERE"
-                + " `userID` = \"" + driver.getDriverID() + "\"";
+                + " `userID` = \"" + driver.getUserID() + "\"";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -95,11 +96,11 @@ public class DriversFacade extends AbstractFacade {
         String query = "INSERT INTO `Drivers` (`driverID`, `firstName`, "
                 + " `lastName`, `address`, `phone`, `email`, `cvName`, `dateAdded`,"
                 + " `idNumber`, `subcountyID`)"
-                + " VALUES (\"" + driver.getDriverID() + "\", \"" + driver.getFirstName()
+                + " VALUES (\"" + driver.getUserID() + "\", \"" + driver.getFirstName()
                 + "\",\"" + driver.getLastName() + "\", \"" + driver.getAddress() + "\", "
                 + "\"" + driver.getPhone() + "\", \"" + driver.getEmail() + "\", \""
                 + driver.getCvName() + "\", \"" + driver.getDateAdded() + "\", \""
-                + driver.getIdNumber() + "\", \"" + driver.getSubcountyID() + "\")";
+                + driver.getIdNumber() + "\", \"" + driver.getSubcounty().getSubcountyID() + "\")";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -109,20 +110,26 @@ public class DriversFacade extends AbstractFacade {
         connect();
         ArrayList<Driver> driverList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Drivers` INNER JOIN `Users` ON "
-                + " `Drivers`.`driverID` = `Users`.`userID` WHERE "
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` LEFT JOIN `Trucks` ON"
+                + " `Drivers`.`plateNumber` = `Trucks`.`plateNumber` WHERE "
                 + " `Users`.`userName` != \"admin\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.driver = new Driver(resultSet.getInt("driverID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -136,22 +143,28 @@ public class DriversFacade extends AbstractFacade {
     public Driver loadTruckDriver() throws SQLException {
         connect();
         Statement statement = connection.createStatement();
-        String query = "SELECT `Users`.`isActive`, `Drivers`.* FROM "
-                + "`Users` INNER JOIN `Drivers` ON `Users`.`userID` = `Drivers`.`driverID`"
-                + " INNER JOIN `Trucks` ON `Drivers`.`plateNumber` = `Trucks`.`plateNumber`"
-                + " WHERE `Trucks`.`plateNumber` = \"" + this.driver.getPlateNumber() + "\"";
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` INNER JOIN `Trucks`"
+                + " ON `Drivers`.`plateNumber` = `Trucks`.`plateNumber`"
+                + " WHERE `Trucks`.`plateNumber` = \"" + this.driver.getTruck().
+                getPlateNumber() + "\"";
         ResultSet resultSet = statement.executeQuery(query);
 
         if (resultSet.next()) {
             this.driver = new Driver(resultSet.getInt("driverID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -173,20 +186,27 @@ public class DriversFacade extends AbstractFacade {
         connect();
         ArrayList<Driver> driverList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Drivers` INNER JOIN `Users` ON"
-                + " `Drivers`.`driverID` = `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` LEFT JOIN `Trucks` ON"
+                + " `Drivers`.`plateNumber` = `Trucks`.`plateNumber` WHERE "
+                + " `Users`.`userName` != \"admin\""
                 + " AND `firstName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.driver = new Driver(resultSet.getInt("driverID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -201,20 +221,27 @@ public class DriversFacade extends AbstractFacade {
         connect();
         ArrayList<Driver> driverList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Drivers` INNER JOIN `Users` ON"
-                + " `Drivers`.`driverID` = `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` LEFT JOIN `Trucks` ON"
+                + " `Drivers`.`plateNumber` = `Trucks`.`plateNumber` WHERE "
+                + " `Users`.`userName` != \"admin\""
                 + " AND `lastName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.driver = new Driver(resultSet.getInt("driverID"), 
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"), 
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+            this.driver = new Driver(resultSet.getInt("driverID"),
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -229,21 +256,28 @@ public class DriversFacade extends AbstractFacade {
         connect();
         ArrayList<Driver> driverList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Drivers` INNER JOIN `Users` ON"
-                + " `Drivers`.`driverID` = `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` LEFT JOIN `Trucks` ON"
+                + " `Drivers`.`plateNumber` = `Trucks`.`plateNumber`"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `subcountyID` = \"" + new SubcountiesFacade().searchSubCountyByName(
                         searchTerm).getSubcountyID() + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.driver = new Driver(resultSet.getInt("driverID"), 
-                    resultSet.getString("firstName"), resultSet.getString("lastName"), 
-                    resultSet.getString("phone"), resultSet.getString("email"), 
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"), 
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+            this.driver = new Driver(resultSet.getInt("driverID"),
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -258,20 +292,27 @@ public class DriversFacade extends AbstractFacade {
         connect();
         ArrayList<Driver> driverList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Drivers` INNER JOIN `Users` ON"
-                + " `Drivers`.`driverID` = `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` LEFT JOIN `Trucks` ON"
+                + " `Drivers`.`plateNumber` = `Trucks`.`plateNumber`"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `address` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.driver = new Driver(resultSet.getInt("driverID"), 
-                    resultSet.getString("firstName"), resultSet.getString("lastName"), 
-                    resultSet.getString("phone"), resultSet.getString("email"), 
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+            this.driver = new Driver(resultSet.getInt("driverID"),
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -286,20 +327,27 @@ public class DriversFacade extends AbstractFacade {
         connect();
         ArrayList<Driver> driverList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Drivers` INNER JOIN `Users` ON"
-                + " `Drivers`.`driverID` = `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` LEFT JOIN `Trucks` ON"
+                + " `Drivers`.`plateNumber` = `Trucks`.`plateNumber`"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `plateNumber` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.driver = new Driver(resultSet.getInt("driverID"), 
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+            this.driver = new Driver(resultSet.getInt("driverID"),
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -314,20 +362,27 @@ public class DriversFacade extends AbstractFacade {
         connect();
         ArrayList<Driver> driverList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Drivers` INNER JOIN `Users` ON"
-                + " `Drivers`.`driverID` = `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` LEFT JOIN `Trucks` ON"
+                + " `Drivers`.`plateNumber` = `Trucks`.`plateNumber`"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `phone` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.driver = new Driver(resultSet.getInt("driverID"), 
-                    resultSet.getString("firstName"), resultSet.getString("lastName"), 
-                    resultSet.getString("phone"), resultSet.getString("email"), 
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"), 
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+            this.driver = new Driver(resultSet.getInt("driverID"),
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -342,20 +397,27 @@ public class DriversFacade extends AbstractFacade {
         connect();
         ArrayList<Driver> driverList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Drivers` INNER JOIN `Users` ON "
-                + " `Drivers`.`driverID` = `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN `Drivers` ON "
+                + " `Users`.`userID` = `Drivers`.`driverID` LEFT JOIN `Trucks` ON"
+                + " `Drivers`.`plateNumber` = `Trucks`.`plateNumber`"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `email` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.driver = new Driver(resultSet.getInt("driverID"), 
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"), 
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+            this.driver = new Driver(resultSet.getInt("driverID"),
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.driver.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.driver.setPlateNumber("None");
+                this.driver.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.driver.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -370,7 +432,7 @@ public class DriversFacade extends AbstractFacade {
         connect();
         int result = 0;
         Statement statement = connection.createStatement();
-        String query = "DELETE FROM `Users` WHERE `userID` = \"" + this.driver.getDriverID() + "\"";
+        String query = "DELETE FROM `Users` WHERE `userID` = \"" + this.driver.getUserID() + "\"";
         result = statement.executeUpdate(query);
         disconnect();
         return result;

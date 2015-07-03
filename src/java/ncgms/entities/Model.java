@@ -22,18 +22,15 @@ public class Model {
     public Model() {
     }
     
-    public Model(int modelID) {
-        this.modelID = modelID;
-    }
-    
-    public Model(String modelName) {
-        this.modelName = modelName;
-    }
-    
-    
     public Model(int modelID, String modelName) {
         this.modelID = modelID;
         this.modelName = modelName;
+    }
+    
+    public Model(int modelID, String modelName, List<Truck> truckList) {
+        this.modelID = modelID;
+        this.modelName = modelName;
+        this.truckList = truckList;
     }
     
     

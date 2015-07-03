@@ -28,18 +28,18 @@ public class Subcounty {
     public Subcounty() {
     }
 
-    /**
-     * Overloaded constructor
-     *
-     * @param subcountyName
-     */
-    public Subcounty(String subcountyName) {
-        this.subcountyName = subcountyName;
-    }
-    
     public Subcounty(int subcountyID, String subcountyName) {
         this.subcountyID = subcountyID;
         this.subcountyName = subcountyName;
+    }
+    
+    public Subcounty(int subcountyID, String subcountyName, List<Client> clientList,
+            List<Driver> driverList, List<Tout> toutList) {
+        this.subcountyID = subcountyID;
+        this.subcountyName = subcountyName;
+        this.clientList = clientList;
+        this.driverList = driverList;
+        this.toutList = toutList;
     }
 
     public int getSubcountyID() {

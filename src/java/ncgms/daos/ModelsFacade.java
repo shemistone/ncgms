@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Model;
 
 /**
@@ -29,7 +28,7 @@ public class ModelsFacade extends AbstractFacade {
     public ModelsFacade(Model model) {
         this.model = model;
     }
-
+/*
     public Map<String, Integer> loadModelIDsMap() throws SQLException {
         connect();
         Map<String, Integer> modelIDsMap = new HashMap<>();
@@ -57,7 +56,7 @@ public class ModelsFacade extends AbstractFacade {
         disconnect();
         return modelNamesMap;
     }
-
+*/
     public ArrayList<String> populateModelList() throws SQLException {
         connect();
         ArrayList<String> modelList = new ArrayList<>();

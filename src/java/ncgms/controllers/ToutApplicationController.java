@@ -29,6 +29,7 @@ import ncgms.entities.User;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.ToutsFacade;
 import ncgms.daos.UsersFacade;
+import ncgms.entities.Truck;
 import ncgms.util.SMSSender;
 
 /**
@@ -110,9 +111,9 @@ public class ToutApplicationController implements Serializable {
             User user = new User(null, null, 0);
             UsersFacade usersFacade = new UsersFacade(user);
             // Create a new tout
-            Tout tout = new Tout(firstName, lastName, phone, email, address,
-                    new Date().getTime(), Integer.valueOf(idNumber), cvName,
-                    new SubcountiesFacade().loadSubcountyIDsMap().get(subcounty));
+            Tout tout = new Tout(0, null, null, 0, firstName, lastName,
+                    phone, email, address, new Date().getTime(), Integer.valueOf(idNumber),
+                    cvName, new Truck(), new SubcountiesFacade().searchSubCountyByName(subcounty));
             ToutsFacade toutsFacade = new ToutsFacade(tout);
 
             // CHeck if tout exists
@@ -125,7 +126,7 @@ public class ToutApplicationController implements Serializable {
                     // Get the userID and set it as the toutID
                     int userID = usersFacade.loadUserID();
                     // Set the toutID
-                    toutsFacade.getTout().setToutID(userID);
+                    toutsFacade.getTout().setUserID(userID);
 
                     // Now add tout to the database
                     int toutResult = toutsFacade.insertTout();

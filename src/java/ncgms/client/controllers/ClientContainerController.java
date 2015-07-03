@@ -89,11 +89,9 @@ public class ClientContainerController implements Serializable {
             ContainersFacade containersFacade = new ContainersFacade(container);
             // Deduct the number of containers
             containersFacade.updateContainer(container);
-            OrderDetail orderDetail = new OrderDetail(Integer.valueOf(quantity),
+            OrderDetail orderDetail = new OrderDetail(0, Integer.valueOf(quantity),
                     containersFacade.loadContainerPrice() * Integer.valueOf(quantity),
-                    container.getContainerID());
-            // Set the container
-            orderDetail.setContainer(container);
+                    container, null);
             orderDetailList.add(orderDetail);
             // Add price to totalPrice
             totalPrice += orderDetail.getPrice();
@@ -137,11 +135,11 @@ public class ClientContainerController implements Serializable {
             int userID = usersFacade.loadUserID();
             // Create a client with the above userID
             Client client = new Client();
-            client.setClientID(userID);
+            client.setUserID(userID);
 
             // Create a new container order
-            ContainerOrder containerOrder = new ContainerOrder(new Date().getTime(),
-                    totalPrice, client.getClientID(), orderDetailList);
+            ContainerOrder containerOrder = new ContainerOrder(0, new Date().getTime(),
+                    totalPrice, 0, client, orderDetailList);
             ContainerOrdersFacade containersOrdersFacade = new ContainerOrdersFacade(containerOrder);
 
             int containerOrderResult = containersOrdersFacade.insertContainerOrder();
@@ -155,7 +153,7 @@ public class ClientContainerController implements Serializable {
                 noOfContainers = 0;
                 orderDetailList.clear();
                 SMSSender.sendSmsSynchronous("072186821", "You have received a new order from "
-                        + new ClientsFacade().searchClientByClientID(containerOrder.getClientID())
+                        + new ClientsFacade().searchClientByClientID(containerOrder.getClient().getUserID())
                         + " NCGMS Inc.");
             } else {
                 // Pass

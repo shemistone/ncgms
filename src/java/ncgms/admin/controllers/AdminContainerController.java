@@ -79,7 +79,7 @@ public class AdminContainerController implements Serializable {
         if (file != null) {
             // Check the file size
             if (file.getSize() > 1048576) {
-                error = "File should be less than 1Mb";
+                error = "File should be less than 1MB";
                 throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR,
                         error, error));
             }
@@ -118,7 +118,7 @@ public class AdminContainerController implements Serializable {
                     + "resources/uploads/images/".length());
             /* Finish file upload */
 
-            Container container = new Container(fileName, name, Integer.parseInt(quantity),
+            Container container = new Container(0, name, fileName, Integer.parseInt(quantity),
                     Double.parseDouble(price));
             ContainersFacade containersFacade = new ContainersFacade(container);
             int result = containersFacade.insertContainer();
@@ -146,8 +146,8 @@ public class AdminContainerController implements Serializable {
             // Check if the cotainer has any order details
             if (!container.getOrderDetailList().isEmpty()) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        "This container has been ordered, removing it will cause loss of data.",
-                        "This container has been ordered, removing it will cause loss of data.");
+                        "This container has been referenced in an order, delete the order first.",
+                        "This container has been referenced in an order, delete the order first.");
                 FacesContext.getCurrentInstance().addMessage("containers_form", facesMessage);
                 return;
             }
@@ -167,14 +167,14 @@ public class AdminContainerController implements Serializable {
             }
         } catch (SQLException ex) {
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                    "Could not remove container - Please contact the system administrator", 
-                    "Could not add container - Please contact the system administrator");
+                    "Could not remove container", 
+                    "Could not add container");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminContainerController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                    "Could not remove container from file system - Please contact the system administrator",
-                    "Could not remove container from file system - Please contact the system administrator");
+                    "Could not remove container from file system",
+                    "Could not remove container from file system");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminContainerController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

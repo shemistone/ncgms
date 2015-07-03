@@ -20,7 +20,6 @@ public class Response {
     private int isRead = 0;
     private String realDateAdded = null;
     // Relationships
-    private int complaintID = 0;
     private Complaint complaint = null;
 
     /**
@@ -29,31 +28,15 @@ public class Response {
     public Response() {
     }
 
-    public Response(int responseID, String response, long dateAdded, int isRead, int complaintID) {
+    public Response(int responseID, String response, long dateAdded, int isRead,
+            Complaint complaint) {
         this.responseID = responseID;
         this.response = response;
         this.dateAdded = dateAdded;
         this.isRead = isRead;
-        this.complaintID = complaintID;
+        this.complaint = complaint;
     }
-
-    public Response(String response, long dateAdded, int isRead, int complaintID) {
-        this.response = response;
-        this.dateAdded = dateAdded;
-        this.isRead = isRead;
-        this.complaintID = complaintID;
-    }
-
-    public Response(String response, long dateAdded, int isRead) {
-        this.response = response;
-        this.dateAdded = dateAdded;
-        this.isRead = isRead;
-    }
-
-    public Response(String response, long dateAdded) {
-        this.response = response;
-        this.dateAdded = dateAdded;
-    }
+    
 
     public int getResponseID() {
         return responseID;
@@ -100,14 +83,6 @@ public class Response {
         this.realDateAdded = realDateAdded;
     }
 
-    public int getComplaintID() {
-        return complaintID;
-    }
-
-    public void setComplaintID(int complaintID) {
-        this.complaintID = complaintID;
-    }
-
     public Complaint getComplaint() {
         return complaint;
     }
@@ -120,7 +95,7 @@ public class Response {
     public String toString() {
         return "\nResponse ID - " + responseID
                 + "\nResponse - " + response
-                + "\nDate Added - " + realDateAdded
-                + "\nComplaint ID- " + complaintID;
+                + "\nDate Added - " + realDateAdded;
     }
+    
 }

@@ -134,6 +134,11 @@
                         <h:graphicImage library="icons" name="accept.png" style="margin: 0 2px -2px 0"/>Approve Order
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>
+                    <h:commandLink action="#{adminContainerOrderController.removeContainerOrder(containerOrderElement)}" 
+                                   rendered="#{containerOrderElement.isApproved == 1}">
+                        <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>Remove Order
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
                 </h:column>
             </h:dataTable>
             <h:outputText class="pages" value="Page #{adminContainerOrderController.currentPage} of #{adminContainerOrderController.noOfPages}"

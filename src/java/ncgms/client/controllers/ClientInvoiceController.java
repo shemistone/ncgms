@@ -60,7 +60,7 @@ public class ClientInvoiceController implements Serializable {
             // Creata a new Invoice object
             Invoice invoice = new Invoice();
             // Set the clientID
-            invoice.setClientID(client.getClientID());
+            invoice.setClient(client);
 
             InvoicesFacade invoicesFacade = new InvoicesFacade(invoice);
             invoiceList = invoicesFacade.loadClientInvoices();

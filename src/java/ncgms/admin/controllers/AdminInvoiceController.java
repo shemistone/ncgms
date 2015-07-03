@@ -219,7 +219,7 @@ public class AdminInvoiceController implements Serializable {
         } finally {
             if (this.invoiceList.isEmpty()) {
                 this.initializeInvoiceList();
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                         "No Results",
                         "No Results");
                 FacesContext.getCurrentInstance().addMessage("invoices_form:search_button",
@@ -241,8 +241,7 @@ public class AdminInvoiceController implements Serializable {
             int result = 0;
             if (invoice.getAmountPaid() > 0) {
                 // Update balance and date paid
-                invoice.setBalance(invoice.getBalance() + (invoice.getAmountDue() 
-                        - invoice.getAmountPaid()));
+                invoice.setBalance(invoice.getBalance() - invoice.getAmountPaid());
                 invoice.setDatePaid(new Date().getTime());
                 InvoicesFacade invoicesFacade = new InvoicesFacade();
                 result = invoicesFacade.updateInvoice(invoice);

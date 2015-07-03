@@ -25,9 +25,7 @@ public class Tout extends User {
     private int idNumber = 0;
     private String cvName = null;
     // Relationships
-    private String plateNumber = null;
     private Truck truck = null;
-    private int subcountyID = 0;
     private Subcounty subcounty = null;
     // Flags
     private boolean editable = false;
@@ -38,21 +36,11 @@ public class Tout extends User {
     public Tout() {
     }
 
-    /**
-     * Overloaded constructor
-     *
-     * @param firstName the firstName to set
-     * @param lastName the lastName to set
-     * @param phone the phone to set
-     * @param email the email to set
-     * @param address the address to set
-     * @param dateAdded the dateAdded to set
-     * @param idNumber the id Number to set
-     * @param cvName
-     * @param subcountyID the subcountyID to set
-     */
-    public Tout(String firstName, String lastName, String phone, String email,
-            String address, long dateAdded, int idNumber, String cvName, int subcountyID) {
+    public Tout(int userID, String username, String passwordHash, int isActive, 
+            String firstName, String lastName, String phone, String email,
+            String address, long dateAdded, int idNumber, String cvName) {
+        super(userID, username, passwordHash, isActive);
+        this.toutID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
@@ -61,13 +49,14 @@ public class Tout extends User {
         this.dateAdded = dateAdded;
         this.idNumber = idNumber;
         this.cvName = cvName;
-        this.subcountyID = subcountyID;
     }
-
-    public Tout(int toutID, String firstName, String lastName, String phone, 
-            String email, String address, long dateAdded, int idNumber, 
-            String cvName, String plateNumber, int subcountyID, int isActive) {
-        this.toutID = toutID;
+    
+    public Tout(int userID, String username, String passwordHash, int isActive, 
+            String firstName, String lastName, String phone, String email,
+            String address, long dateAdded, int idNumber, String cvName,
+            Truck truck, Subcounty subcounty) {
+        super(userID, username, passwordHash, isActive);
+        this.toutID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
@@ -76,15 +65,14 @@ public class Tout extends User {
         this.dateAdded = dateAdded;
         this.idNumber = idNumber;
         this.cvName = cvName;
-        this.plateNumber = plateNumber;
-        this.subcountyID = subcountyID;
-        this.isActive = isActive;
+        this.truck = truck;
+        this.subcounty = subcounty;
     }
-
+    
     public int getToutID() {
         return toutID;
     }
-
+    
     public void setToutID(int toutID) {
         this.toutID = toutID;
     }
@@ -166,22 +154,6 @@ public class Tout extends User {
         this.cvName = cvName;
     }
 
-    public String getPlateNumber() {
-        return plateNumber;
-    }
-
-    public void setPlateNumber(String plateNumber) {
-        this.plateNumber = plateNumber;
-    }
-
-    public int getSubcountyID() {
-        return subcountyID;
-    }
-
-    public void setSubcountyID(int subcountyID) {
-        this.subcountyID = subcountyID;
-    }
-
     public Subcounty getSubcounty() {
         return subcounty;
     }
@@ -215,8 +187,7 @@ public class Tout extends User {
                 + "\nPhone - " + phone
                 + "\nID Number - " + idNumber
                 + "\nCV Name - " + cvName
-                + "\nDate Added - " + realDateAdded
-                + "\nSub-County - " + subcountyID;
+                + "\nDate Added - " + realDateAdded;
     }
 
 }

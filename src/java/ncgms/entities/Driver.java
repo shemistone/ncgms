@@ -12,7 +12,7 @@ import java.util.Date;
  *
  * @author root
  */
-public class Driver extends User{
+public class Driver extends User {
 
     private int driverID = 0;
     private String firstName = null;
@@ -25,13 +25,12 @@ public class Driver extends User{
     private int idNumber = 0;
     private String cvName = null;
     // Relationships
-    private String plateNumber = null;
-    private Truck trcuk = null;
-    private int subcountyID = 0;
+    private Truck truck = null;
     private Subcounty subcounty = null;
 
     // Flags
     private boolean editable = false;
+
     /**
      * Default constructor
      */
@@ -41,6 +40,10 @@ public class Driver extends User{
     /**
      * Overloaded constructor
      *
+     * @param userID
+     * @param username
+     * @param passwordHash
+     * @param isActive
      * @param firstName
      * @param lastName
      * @param phone
@@ -49,10 +52,12 @@ public class Driver extends User{
      * @param dateAdded
      * @param idNumber
      * @param cvName
-     * @param subcountyID
      */
-    public Driver(String firstName, String lastName, String phone, String email,
-            String address, long dateAdded, int idNumber, String cvName, int subcountyID) {
+    public Driver(int userID, String username, String passwordHash, int isActive,
+            String firstName, String lastName, String phone, String email,
+            String address, long dateAdded, int idNumber, String cvName) {
+        super(userID, username, passwordHash, isActive);
+        this.driverID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
@@ -61,13 +66,14 @@ public class Driver extends User{
         this.dateAdded = dateAdded;
         this.idNumber = idNumber;
         this.cvName = cvName;
-        this.subcountyID = subcountyID;
     }
-    
-    public Driver(int driverID, String firstName, String lastName, String phone,
-            String email, String address, long dateAdded, int idNumber, String cvName,
-            String plateNumber, int subcountyID, int isActive) {
-        this.driverID = driverID;
+
+    public Driver(int userID, String username, String passwordHash, int isActive,
+            String firstName, String lastName, String phone, String email,
+            String address, long dateAdded, int idNumber, String cvName,
+            Truck truck, Subcounty subcounty) {
+        super(userID, username, passwordHash, isActive);
+        this.driverID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
@@ -76,25 +82,8 @@ public class Driver extends User{
         this.dateAdded = dateAdded;
         this.idNumber = idNumber;
         this.cvName = cvName;
-        this.plateNumber = plateNumber;
-        this.subcountyID = subcountyID;
-        this.isActive = isActive;
-    }
-    
-    public Driver(int driverID, String firstName, String lastName, String phone,
-            String email, String address, long dateAdded, int idNumber, String cvName,
-            String plateNumber, int subcountyID) {
-        this.driverID = driverID;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phone = phone;
-        this.email = email;
-        this.address = address;
-        this.dateAdded = dateAdded;
-        this.idNumber = idNumber;
-        this.cvName = cvName;
-        this.plateNumber = plateNumber;
-        this.subcountyID = subcountyID;
+        this.truck = truck;
+        this.subcounty = subcounty;
     }
 
     public String getFirstName() {
@@ -150,7 +139,7 @@ public class Driver extends User{
         realDateAdded = realDateAdded.substring(0, realDateAdded.
                 lastIndexOf("EAT")) + realDateAdded.substring(realDateAdded.
                         lastIndexOf("EAT") + 4, realDateAdded.
-                                lastIndexOf("EAT") + 8);
+                        lastIndexOf("EAT") + 8);
         return realDateAdded;
     }
 
@@ -174,28 +163,12 @@ public class Driver extends User{
         this.cvName = cvName;
     }
 
-    public String getPlateNumber() {
-        return plateNumber;
-    }
-
-    public void setPlateNumber(String plateNumber) {
-        this.plateNumber = plateNumber;
-    }
-
     public int getDriverID() {
         return driverID;
     }
 
     public void setDriverID(int driverID) {
         this.driverID = driverID;
-    }
-
-    public int getSubcountyID() {
-        return subcountyID;
-    }
-
-    public void setSubcountyID(int subcountyID) {
-        this.subcountyID = subcountyID;
     }
 
     public Subcounty getSubcounty() {
@@ -206,12 +179,12 @@ public class Driver extends User{
         this.subcounty = subcounty;
     }
 
-    public Truck getTrcuk() {
-        return trcuk;
+    public Truck getTruck() {
+        return truck;
     }
 
-    public void setTrcuk(Truck trcuk) {
-        this.trcuk = trcuk;
+    public void setTruck(Truck trcuk) {
+        this.truck = trcuk;
     }
 
     public boolean isEditable() {
@@ -224,16 +197,14 @@ public class Driver extends User{
 
     @Override
     public String toString() {
-        return "\nDriver ID - " + driverID
+        return "\nDriver ID - " + userID
                 + "\nFirst name - " + firstName
                 + "\nLast name - " + lastName
                 + "\nAddress - " + address
                 + "\nEmail - " + email
                 + "\nPhone - " + phone
                 + "\nID Number - " + idNumber
-                + "\nCV Name - " + cvName 
-                + "\nPlate Number - " + plateNumber 
-                + "\nDate Added - " + new Date(dateAdded).toString()
-                + "\nSub-County - " + subcountyID;
+                + "\nCV Name - " + cvName
+                + "\nDate Added - " + realDateAdded;
     }
 }

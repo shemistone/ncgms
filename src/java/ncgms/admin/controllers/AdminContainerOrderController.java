@@ -199,7 +199,6 @@ public class AdminContainerOrderController implements Serializable {
             // Create a new ContainerOrdersFacade
             ContainerOrdersFacade containerOrdersFacade = new ContainerOrdersFacade(containerOrder);
             int result = containerOrdersFacade.approveContainerOrder();
-            System.out.print(result);
             if (result == 1) {
                 // Set the order as approved
                 containerOrder.setIsApproved(1);
@@ -215,6 +214,40 @@ public class AdminContainerOrderController implements Serializable {
         }
     }
 
+    
+    public void removeContainerOrder(ContainerOrder containerOrder){
+        try {
+            ContainerOrdersFacade containerOrderFacade = new ContainerOrdersFacade(containerOrder);
+            int result = containerOrderFacade.removeContainerOrder();
+            if(result == 1){
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                    "Order successfully removed.", 
+                    "Order successfully removed.");
+            FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+            }else{
+                //
+            }
+        } catch (SQLException ex) {
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    "Could not approve order. Please contact the system administrator.", 
+                    "Could not approve order. Please contact the system administrator.");
+            FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+            Logger.getLogger(AdminContainerOrderController.class.getName()).log(Level.SEVERE, null, ex);
+        }finally {
+            // Get current page
+            int page = this.currentPage;
+            // Initialize container order list
+            this.initializeContainerOrderList();
+            // Go back to current page
+            for(int i = 1; i < page; i++){
+                nextContainerOrderPage();
+            }
+
+        }
+
+        
+    }
+    
     public void refreshContainerOrders() {
         this.initializeContainerOrderList();
     }

@@ -16,11 +16,11 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Client;
 import ncgms.entities.ContainerOrder;
 import ncgms.entities.Invoice;
 import ncgms.entities.Message;
+import ncgms.entities.User;
 import ncgms.util.SMSSender;
 
 /**
@@ -46,7 +46,7 @@ public class InvoicesFacade extends AbstractFacade {
 
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Invoices` WHERE `clientID` = \""
-                + this.invoice.getClientID() + "\""
+                + this.invoice.getClient().getUserID() + "\""
                 + " ORDER BY `invoiceID` DESC";
         ResultSet resultSet = statement.executeQuery(query);
 
@@ -55,7 +55,7 @@ public class InvoicesFacade extends AbstractFacade {
                     resultSet.getLong("dateAdded"), resultSet.getLong("dateDue"),
                     resultSet.getLong("datePaid"), resultSet.getDouble("amountDue"),
                     resultSet.getDouble("amountPaid"), resultSet.getDouble("balance"),
-                    resultSet.getInt("isPaid"), resultSet.getInt("clientID"));
+                    resultSet.getInt("isPaid"), null);
             invoiceList.add(this.invoice);
         }
         disconnect();
@@ -76,11 +76,11 @@ public class InvoicesFacade extends AbstractFacade {
                     resultSet.getLong("dateAdded"), resultSet.getLong("dateDue"),
                     resultSet.getLong("datePaid"), resultSet.getDouble("amountDue"),
                     resultSet.getDouble("amountPaid"), resultSet.getDouble("balance"),
-                    resultSet.getInt("isPaid"), resultSet.getInt("clientID"));
+                    resultSet.getInt("isPaid"), null);
             // Get this invoices client
             ClientsFacade clientsFacade = new ClientsFacade();
             this.invoice.setClient(clientsFacade.searchClientByClientID(
-                    this.invoice.getClientID()));
+                    resultSet.getInt("clientID")));
             // Add invoice to invoiceList
             invoiceList.add(this.invoice);
         }
@@ -130,7 +130,6 @@ public class InvoicesFacade extends AbstractFacade {
             List<ContainerOrder> monthlyUnapprovedClientContainerOrderList = new ArrayList<>();
             monthlyUnapprovedClientContainerOrderList = containerOrdersFacade.
                     loadMonthlyUnapporovedClientContainerOrders(client, pastDate);
-
             // Calculate the amount due fo all the orders of the prevoius month
             double amountDue = 0;
             for (ContainerOrder continerOrder : monthlyUnapprovedClientContainerOrderList) {
@@ -138,37 +137,37 @@ public class InvoicesFacade extends AbstractFacade {
             }
 
             // Get this clients' previous invoice balance
-            double balance = loadClientsPreviousInvoiceBalance(client.getClientID());
+            double balance = loadClientsPreviousInvoiceBalance(client.getUserID());
             // Add balance to amountDue
             amountDue += balance;
-
-            if (amountDue == 0)// If amount due is zero
-            {
-                return 0;
+            balance = amountDue;
+            if (amountDue == 0) {// If amount due is zero
+                continue;
             }
 
             // Create and insert the invoice
             this.invoice = new Invoice(0, new Date().getTime(), new Date().getTime() + 86400000,
-                    0, amountDue, 0, balance, 0, client.getClientID());
+                    0, amountDue, 0, balance, 0, client);
             result = this.insertInvoice();
 
             // Send a message to each client
             if (result > 0) {
-                String messageContent = "Hello " + new UsersFacade().searchUserByUserID(
-                        this.invoice.getClientID()) + " You have received a new monthly bill. "
+                String messageContent = "Hello " + new ClientsFacade().searchClientByClientID(
+                        client.getUserID()).getFirstName() + " You have received a new monthly bill. "
                         + " Amount due is KShs: " + invoice.getAmountDue()
                         + ". Please ensure that you pay before  " + this.invoice.getRealDateDue()
                         + " to avoid disruption of services. Thank you for your business support."
                         + " NCGMS Inc.";
-                Message message = new Message(messageContent, new Date().getTime(),
-                        0, this.invoice.getClientID());
+                Message message = new Message(0, messageContent, new Date().getTime(),
+                        0, new User(client.getUserID(), null, null, 0));
                 MessagesFacade messagesFacade = new MessagesFacade(message);
                 result = messagesFacade.insertMessage();
                 try {
                     // Send an sms to the user
                     SMSSender.sendSmsSynchronous(
                             new ClientsFacade().searchClientByClientID(
-                                    message.getUserID()).getPhone(), messageContent);
+                                    message.getUser().getUserID()
+                            ).getPhone(), messageContent);
                 } catch (IOException | InterruptedException ex) {
                     Logger.getLogger(InvoicesFacade.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -187,7 +186,7 @@ public class InvoicesFacade extends AbstractFacade {
                 + " `balance`, `isPaid`, `clientID`) VALUES "
                 + " (\"" + invoice.getDateAdded() + "\", \"" + invoice.getDateDue() + "\","
                 + "\"" + invoice.getAmountDue() + "\", \"" + invoice.getBalance() + "\","
-                + " \"" + invoice.getIsPaid() + "\", \"" + invoice.getClientID() + "\")";
+                + " \"" + invoice.getIsPaid() + "\", \"" + invoice.getClient().getUserID() + "\")";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -215,11 +214,11 @@ public class InvoicesFacade extends AbstractFacade {
                     resultSet.getLong("dateAdded"), resultSet.getLong("dateDue"),
                     resultSet.getLong("datePaid"), resultSet.getDouble("amountDue"),
                     resultSet.getDouble("amountPaid"), resultSet.getDouble("balance"),
-                    resultSet.getInt("isPaid"), resultSet.getInt("clientID"));
+                    resultSet.getInt("isPaid"), null);
             // Get this invoices client
             ClientsFacade clientsFacade = new ClientsFacade();
             this.invoice.setClient(clientsFacade.searchClientByClientID(
-                    this.invoice.getClientID()));
+                    resultSet.getInt("clientID")));
             // Add invoice to invoicelIST
             invoiceList.add(this.invoice);
         }
@@ -241,11 +240,11 @@ public class InvoicesFacade extends AbstractFacade {
                     resultSet.getLong("dateAdded"), resultSet.getLong("dateDue"),
                     resultSet.getLong("datePaid"), resultSet.getDouble("amountDue"),
                     resultSet.getDouble("amountPaid"), resultSet.getDouble("balance"),
-                    resultSet.getInt("isPaid"), resultSet.getInt("clientID"));
+                    resultSet.getInt("isPaid"), null);
             // Get this invoices client
             ClientsFacade clientsFacade = new ClientsFacade();
             this.invoice.setClient(clientsFacade.searchClientByClientID(
-                    this.invoice.getClientID()));
+                    resultSet.getInt("clientID")));
             // Add invoice to invoicelIST
             invoiceList.add(this.invoice);
         }
@@ -267,12 +266,12 @@ public class InvoicesFacade extends AbstractFacade {
                     resultSet.getLong("dateAdded"), resultSet.getLong("dateDue"),
                     resultSet.getLong("datePaid"), resultSet.getDouble("amountDue"),
                     resultSet.getDouble("amountPaid"), resultSet.getDouble("balance"),
-                    resultSet.getInt("isPaid"), resultSet.getInt("clientID"));
+                    resultSet.getInt("isPaid"), null);
             // Get this invoices client
             ClientsFacade clientsFacade = new ClientsFacade();
             this.invoice.setClient(clientsFacade.searchClientByClientID(
-                    this.invoice.getClientID()));
-            // Add invoice to invoicelIST
+                    resultSet.getInt("clientID")));
+            // Add invoice to invoiceList
             invoiceList.add(this.invoice);
         }
         disconnect();
@@ -293,11 +292,11 @@ public class InvoicesFacade extends AbstractFacade {
                     resultSet.getLong("dateAdded"), resultSet.getLong("dateDue"),
                     resultSet.getLong("datePaid"), resultSet.getDouble("amountDue"),
                     resultSet.getDouble("amountPaid"), resultSet.getDouble("balance"),
-                    resultSet.getInt("isPaid"), resultSet.getInt("clientID"));
+                    resultSet.getInt("isPaid"), null);
             // Get this invoices client
             ClientsFacade clientsFacade = new ClientsFacade();
             this.invoice.setClient(clientsFacade.searchClientByClientID(
-                    this.invoice.getClientID()));
+                    resultSet.getInt("clientID")));
             // Add invoice to invoicelIST
             invoiceList.add(this.invoice);
         }

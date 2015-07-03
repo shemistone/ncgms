@@ -22,7 +22,6 @@ public class ContainerOrder {
     private double totalPrice = 0.0;
     private int isApproved = 0;
     // Relationships
-    private int clientID = 0;
     Client client = null;
     private List<OrderDetail> orderDetailList = new ArrayList<>(); 
 
@@ -32,36 +31,25 @@ public class ContainerOrder {
     public ContainerOrder() {
     }
 
-    /**
-     * Overloaded constructor
-     *
-     * @param dateAdded
-     * @param totalPrice
-     * @param clientID
-     */
-    public ContainerOrder(long dateAdded, double totalPrice, int clientID) {
-        this.dateAdded = dateAdded;
-        this.totalPrice = totalPrice;
-        this.clientID = clientID;
-    }
-
-    public ContainerOrder(long dateAdded, double totalPrice, int clientID,
-            List<OrderDetail> orderDetailList) {
-        this.dateAdded = dateAdded;
-        this.totalPrice = totalPrice;
-        this.clientID = clientID;
-        this.orderDetailList = orderDetailList;
-    }
-
     public ContainerOrder(int orderID, long dateAdded, double totalPrice,
-            int isApproved, int clientID) {
+            int isApproved, Client client, List<OrderDetail> orderDetailList) {
         this.orderID = orderID;
         this.dateAdded = dateAdded;
         this.totalPrice = totalPrice;
         this.isApproved = isApproved;
-        this.clientID = clientID;
+        this.client = client;
+        this.orderDetailList = orderDetailList;
     }
-
+    
+    public ContainerOrder(int orderID, long dateAdded, double totalPrice,
+            int isApproved) {
+        this.orderID = orderID;
+        this.dateAdded = dateAdded;
+        this.totalPrice = totalPrice;
+        this.isApproved = isApproved;
+    }
+    
+    
     public List<OrderDetail> getOrderDetailList() {
         return orderDetailList;
     }
@@ -115,14 +103,6 @@ public class ContainerOrder {
         this.isApproved = isApproved;
     }
 
-    public int getClientID() {
-        return clientID;
-    }
-
-    public void setClientID(int clientID) {
-        this.clientID = clientID;
-    }
-
     public Client getClient() {
         return client;
     }
@@ -136,7 +116,6 @@ public class ContainerOrder {
         return "\nOrder ID - " + orderID
                 + "\nDate Added - " + new Date(dateAdded).toString()
                 + "\nTotal Price - " + totalPrice
-                + "\nIs Approved - " + isApproved
-                + "\nClient ID - " + clientID;
+                + "\nIs Approved - " + isApproved;
     }
 }

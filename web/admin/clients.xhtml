@@ -22,7 +22,7 @@
         <!--Clients Form-->
         <h:form id="clients_form">       
             <h1>Clients</h1>
-            
+
             <h:outputText value="You have no Clients" 
                           rendered="#{adminClientController.clientList.size() == 0}"/><br />  
 
@@ -40,7 +40,7 @@
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:message for="search_button" errorClass="error" infoClass="info"/><br />
-            
+
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
 
             <h:outputText class="pages"  value="Page #{adminClientController.currentPage} of #{adminClientController.noOfPages}"
@@ -94,7 +94,7 @@
                     <f:facet name="header">
                         <h:outputText value="Subcounty" rendered="#{adminClientController.clientList.size() != 0}"/>
                     </f:facet>
-                    <h:outputText value="#{adminClientController.subcountyNamesMap.get(clientElement.subcountyID)}"/>
+                    <h:outputText value="#{clientElement.subcounty.subcountyName}"/>
                 </h:column> 
                 <h:column>
                     <f:facet name="header">
@@ -106,10 +106,10 @@
                     <f:facet name="header">
                         <h:outputText value="Assigned Truck" rendered="#{adminClientController.clientList.size() != 0}"/>
                     </f:facet>
-                    <h:inputText value="#{clientElement.plateNumber}" rendered="#{!clientElement.editable}"
+                    <h:outputText value="#{clientElement.truck.plateNumber}" rendered="#{!clientElement.editable}"
                                  style="height: 20px; width: 100%; display: inline-block;border: none;
                                  background-color: transparent"/>
-                    <h:selectOneMenu value="#{clientElement.plateNumber}" rendered="#{clientElement.editable}"
+                    <h:selectOneMenu value="#{clientElement.truck.plateNumber}" rendered="#{clientElement.editable}"
                                      style="width: 100%; height: 25px">
                         <f:selectItems value="#{adminClientController.plateNumberList}"/>
                     </h:selectOneMenu>
@@ -143,7 +143,7 @@
                         Accept
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>                   
-                    </h:column> 
+                </h:column> 
                 <h:column>
                     <h:commandLink action="#{adminClientController.rejectApplication(clientElement)}" 
                                    rendered="#{clientElement.isActive != 1}">

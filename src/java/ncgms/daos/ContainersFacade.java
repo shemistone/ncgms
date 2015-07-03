@@ -60,7 +60,7 @@ public class ContainersFacade extends AbstractFacade {
         // Get all the containerOrders of this each container
         for (Container newContainer : containerList) {
             OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setContainerID(newContainer.getContainerID());
+            orderDetail.setContainer(newContainer);
             OrderDetailsFacade orderDetailsFacade = new OrderDetailsFacade(orderDetail);
             newContainer.setOrderDetailList(orderDetailsFacade.loadContainerOrderDetails());
         }

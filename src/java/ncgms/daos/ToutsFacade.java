@@ -10,8 +10,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import ncgms.daos.AbstractFacade;
+import ncgms.entities.Model;
 import ncgms.entities.Tout;
+import ncgms.entities.Truck;
 
 /**
  * ToutsFacade
@@ -33,7 +34,7 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         Statement statement = connection.createStatement();
         String query = "UPDATE `Users` SET `isActive` = \"" + 1 + "\" WHERE "
-                + " `userID` = \"" + tout.getToutID() + "\"";
+                + " `userID` = \"" + tout.getUserID() + "\"";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -44,12 +45,12 @@ public class ToutsFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = null;
         int result = 0;
-        if(tout.getPlateNumber().equals("None")){
+        if(tout.getTruck().getPlateNumber().equals("None")){
            query = "UPDATE `Touts` SET `plateNumber` = NULL"
-                + " WHERE `toutID` = \"" + tout.getToutID() + "\"";         
+                + " WHERE `toutID` = \"" + tout.getUserID() + "\"";         
         }else{
-            query = "UPDATE `Touts` SET `plateNumber` = \"" + tout.getPlateNumber() + "\""
-                + " WHERE `toutID` = \"" + tout.getToutID() + "\"";
+            query = "UPDATE `Touts` SET `plateNumber` = \"" + tout.getTruck().getPlateNumber() + "\""
+                + " WHERE `toutID` = \"" + tout.getUserID() + "\"";
         }
         result += statement.executeUpdate(query);
         disconnect();
@@ -60,20 +61,26 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Touts` INNER JOIN `Users` ON "
-                + " `Touts`.`toutID` = `Users`.`userID` WHERE "
+        String query = "SELECT * FROM `Users` INNER JOIN `Touts` ON "
+                + " `Users`.`userID` = `Touts`.`toutID`  LEFT JOIN `Trucks` ON"
+                + " `Touts`.`plateNumber` = `Trucks`.`plateNumber` WHERE "
                 + " `Users`.`userName` != \"admin\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -88,21 +95,26 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT `Users`.`isActive`, `Touts`.* FROM `Users` INNER JOIN"
+        String query = "SELECT * FROM `Users` INNER JOIN"
                 + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
                 + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber` WHERE "
-                + " `Trucks`.`plateNumber` = \"" + tout.getPlateNumber() + "\"";
+                + " `Trucks`.`plateNumber` = \"" + tout.getTruck().getPlateNumber() + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -135,12 +147,12 @@ public class ToutsFacade extends AbstractFacade {
         String query = "INSERT INTO `Touts` (`toutID`, `firstName`, `lastName`, "
                 + " `address`, `phone`, `email`, `cvName`, `dateAdded`, `idNumber`,"
                 + " `subcountyID`)"
-                + " VALUES (\"" + tout.getToutID() + "\", \"" + tout.getFirstName()
+                + " VALUES (\"" + tout.getUserID() + "\", \"" + tout.getFirstName()
                 + "\",\"" + tout.getLastName() + "\", \"" + tout.getAddress() + "\", "
                 + "\"" + tout.getPhone() + "\", \"" + tout.getEmail() + "\", \""
                 + tout.getCvName() + "\", \"" + tout.getDateAdded() + "\", \""
                 + tout.getIdNumber() + "\", "
-                + "\"" + tout.getSubcountyID() + "\")";
+                + "\"" + tout.getSubcounty().getSubcountyID()+ "\")";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -158,20 +170,27 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Touts` INNER JOIN `Users` ON"
-                + " `Touts`.`toutID` = `Users`.`userID` WHERE `Users`.`userName` !="
-                + " \"admin\" AND `email` = \"" + searchTerm + "\"";
+        String query = "SELECT * FROM `Users` INNER JOIN"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + "  WHERE `Users`.`userName` != \"admin\" AND `email` = \"" 
+                + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -186,20 +205,27 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Touts` INNER JOIN `Users` on `Touts`.`toutID` = "
-                + "`Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `phone` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -214,20 +240,27 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Touts` INNER JOIN `Users` on `Touts`.`toutID` = "
-                + "`Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `plateNumber` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -242,20 +275,27 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Touts` INNER JOIN `Users` on `Touts`.`toutID` = "
-                + " `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `address` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -270,21 +310,28 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Touts` INNER JOIN `Users` on `Touts`.`toutID` = "
-                + "`Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `subcountyID` = \"" + new SubcountiesFacade().searchSubCountyByName(
                         searchTerm).getSubcountyID() + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -299,20 +346,27 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Touts` INNER JOIN `Users` on `Touts`.`toutID` = "
-                + " `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `lastName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+           this.tout = new Tout(resultSet.getInt("toutID"),
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -327,20 +381,27 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Touts` INNER JOIN `Users` on `Touts`.`toutID` = "
-                + " `Users`.`userID` WHERE `Users`.`userName` != \"admin\""
+        String query = "SELECT * FROM `Users` INNER JOIN"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `firstName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
-            this.tout = new Tout(resultSet.getInt("toutID"),
-                    resultSet.getString("firstName"), resultSet.getString("lastName"),
-                    resultSet.getString("phone"), resultSet.getString("email"),
-                    resultSet.getString("address"), resultSet.getLong("dateAdded"),
-                    resultSet.getInt("idNumber"), resultSet.getString("cvName"),
-                    resultSet.getString("plateNumber"), resultSet.getInt("subcountyID"),
-                    resultSet.getInt("isActive"));
+           this.tout = new Tout(resultSet.getInt("toutID"),
+                    resultSet.getString("username"), resultSet.getString("passwordHash"),
+                    resultSet.getInt("isActive"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("phone"),
+                    resultSet.getString("email"), resultSet.getString("address"),
+                    resultSet.getLong("dateAdded"), resultSet.getInt("idNumber"),
+                    resultSet.getString("cvName"));
+            //Set the truck
+            this.tout.setTruck(new Truck(resultSet.getString("plateNumber"),
+                    resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
+                    new Model(resultSet.getInt("modelID"), null)));
+            //Set the plateNumber
             if (resultSet.getString("plateNumber") == null) {
-                this.tout.setPlateNumber("None");
+                this.tout.getTruck().setPlateNumber("None");
             }
             // Set the subcounty
             this.tout.setSubcounty(new SubcountiesFacade().searchSubCountyById(
@@ -355,7 +416,7 @@ public class ToutsFacade extends AbstractFacade {
         connect();
         int result = 0;
         Statement statement = connection.createStatement();
-        String query = "DELETE FROM `Users` WHERE `userID` = \"" + this.tout.getToutID() + "\"";
+        String query = "DELETE FROM `Users` WHERE `userID` = \"" + this.tout.getUserID() + "\"";
         result = statement.executeUpdate(query);
         disconnect();
         return result;

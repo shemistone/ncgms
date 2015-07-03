@@ -49,7 +49,7 @@
                          var="complaintElement">
                 <h:column>
                     <h:form>
-                        <h:outputText value="#{complaintElement.client.plotName} #{complaintElement.realDateAdded}"/><br />
+                        <h:outputText value="#{complaintElement.user.username} #{complaintElement.realDateAdded}"/><br />
                         <h:outputText value="#{complaintElement.complaint}"/>
                         <h:dataTable value="#{complaintElement.responseList}" var="responseElement"
                                      rendered="#{complaintElement.responseList.size() != 0}">

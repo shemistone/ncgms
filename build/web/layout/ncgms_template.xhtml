@@ -33,14 +33,16 @@
                         <div style="float: left">
                             <label for="password" >Password: *</label><br />
                             
-                            <h:inputSecret id="password" value="#{logInLogOutController.password}"/>
+                            <h:inputSecret id="password" value="#{logInLogOutController.password}"/><br />
+                            
+                            <h:message for="password" errorClass="error" infoClass="info"/>
+                        </div>
+                        <div>
                             <h:commandButton value="Log In" action="#{logInLogOutController.logIn}"
                                              style="clear: both">
                                 <f:ajax event="action" execute="@form" render="@all"/>
                             </h:commandButton><br />
-                            <h:message for="password" errorClass="error" infoClass="info"/>
                         </div>
-
                     </h:form>
                 </ui:insert>
             </div>
@@ -50,17 +52,17 @@
                         <h:form id="application_form">
                             <h:commandLink action="#{ncgmsTemplateController.toClientApplication}">
                                 <h:graphicImage library="images" name="clients.png" 
-                                                style="margin: 0 2px -2px 0"/><br />
+                                                style="//margin: 0 2px -2px 0"/><br />
                                 Client Application
                             </h:commandLink><br />
                             <h:commandLink action="#{ncgmsTemplateController.toDriverApplication}" >
                                 <h:graphicImage library="images" name="driver.jpeg" 
-                                                style="margin: 0 2px -2px 0"/><br />
+                                                style="//margin: 0 2px -2px 0"/><br />
                                 Driver Application
                             </h:commandLink><br />
                             <h:commandLink action="#{ncgmsTemplateController.toToutApplication}" >
                                 <h:graphicImage library="images" name="tout.jpeg" 
-                                                style="margin: 0 2px -2px 0"/><br />
+                                                style="//margin: 0 2px -2px 0"/><br />
                                 Sanitation Worker<br />Application
                             </h:commandLink>
                         </h:form>

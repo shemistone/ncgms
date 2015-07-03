@@ -22,6 +22,7 @@ import javax.validation.constraints.Pattern;
 import ncgms.entities.Truck;
 import ncgms.daos.ModelsFacade;
 import ncgms.daos.TrucksFacade;
+import ncgms.entities.Model;
 
 /**
  *
@@ -77,11 +78,9 @@ public class AdminTruckController implements Serializable {
             this.modelList = modelsFacade.populateModelList();
 
             // Populate map of modelIDs
-            this.modelIDsMap = modelsFacade.loadModelIDsMap();
-
+            //this.modelIDsMap = modelsFacade.loadModelIDsMap();
             // Populate map of modelNames
-            this.modelNamesMap = modelsFacade.loadModelNamesMap();
-
+            //this.modelNamesMap = modelsFacade.loadModelNamesMap();
             // Load all the trucks
             TrucksFacade trucksFacade = new TrucksFacade();
             this.truckList = trucksFacade.loadAllTrucks();
@@ -128,11 +127,9 @@ public class AdminTruckController implements Serializable {
             this.modelList = modelsFacade.populateModelList();
 
             // Populate map of modelIDs
-            this.modelIDsMap = modelsFacade.loadModelIDsMap();
-
+            //this.modelIDsMap = modelsFacade.loadModelIDsMap();
             // Populate map of modelNames
-            this.modelNamesMap = modelsFacade.loadModelNamesMap();
-
+            //this.modelNamesMap = modelsFacade.loadModelNamesMap();
             // Set the number of pages
             this.noOfPages = this.truckList.size() / 10;
             // Set the last page
@@ -244,7 +241,9 @@ public class AdminTruckController implements Serializable {
     public void insertTruck() {
         try {
             // Create a new truck
-            Truck truck = new Truck(plateNumber, 1, modelIDsMap.get(modelName));
+            Truck truck = new Truck(plateNumber, 1, 0,
+                    new Model(new ModelsFacade().searchModelByName(modelName).getModelID(),
+                            modelName));
             TrucksFacade trucksFacade = new TrucksFacade(truck);
             // Check if truck exists
             if (trucksFacade.truckExists()) {

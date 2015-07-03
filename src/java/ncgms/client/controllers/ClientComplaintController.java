@@ -59,12 +59,12 @@ public class ClientComplaintController implements Serializable {
             // Initialize the variables for navigation
             currentComplaintIndex = 0;
             currentPage = 1;
-            
+
             // Create user object for current client            
             Client client = (Client) new LogInLogOutController().getClientFromSession();
             // Create a new complaint
             Complaint complaint = new Complaint();
-            complaint.setUserID(client.getClientID());
+            complaint.setUser(client);
             ComplaintsFacade complaintsFacade = new ComplaintsFacade(complaint);
             // Load all the complaints            
             this.complaintList = complaintsFacade.loadUserComplaints();
@@ -190,7 +190,8 @@ public class ClientComplaintController implements Serializable {
             int userID = usersFacade.loadUserID();
 
             // Create a new complaint
-            Complaint complaint = new Complaint(this.complaint, 0, new Date().getTime(), userID);
+            Complaint complaint = new Complaint(this.complaint, 0, new Date().getTime(),
+                    new User(userID, null, null, 0));
             ComplaintsFacade complaintsFacade = new ComplaintsFacade(complaint);
 
             // Now insert the new complaint into the database

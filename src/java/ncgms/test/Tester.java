@@ -40,16 +40,16 @@ import ncgms.util.SMSSender;
  * @author root
  */
 public class Tester {
-    
+
     private static List<Subcounty> subcountyList = new ArrayList<>();
     private static List<Truck> truckList = new ArrayList<>();
     private static List<Package> packageList = new ArrayList<>();
     private static List<Student> studentList = new ArrayList<>();
-    
+
     public static void main(String[] args) {
         processInvoices();
     }
-    
+
     public static void loadAllStudents() {
         try {
             studentList = new TestsFacade().loadAllStudents();
@@ -57,18 +57,18 @@ public class Tester {
             Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void insertUsers() {
         loadAllStudents();
         loadAllSubcounties();
         loadAllTrucks();
         loadAllPackages();
-        
+
         String firstName, lastName, phone, plotName, plateNumber, address, username,
                 password, email, packageName, passwordHash;
         int idNumber, subcountyID;
         long dateAdded;
-        
+
         for (int i = 0; i < 140; i++) {
             try {
                 TestsFacade testsFacade = new TestsFacade();
@@ -99,28 +99,32 @@ public class Tester {
                 User user = new User(username, passwordHash, 0);
                 UsersFacade usersFacade = new UsersFacade(user);
                 usersFacade.insertUser();
-                
+
                 if (i < 100) {
                     // Create and insert client
-                    Client client = new Client(usersFacade.loadUserID(), firstName,
-                            lastName, address, phone, email, plotName, dateAdded, idNumber,
-                            subcountyID, plateNumber, packageName, 0, 0);
+                    /*int userID, String username, String passwordHash,int isActive, String firstName, 
+                     String lastName, String address, String phone, String email, String plotName,
+                     long dateAdded, int idNumber, int wantsToCancel*/
+                    Client client = new Client(usersFacade.loadUserID(), null,
+                            null, 0, firstName, lastName, address, phone, email,
+                            plotName, dateAdded, idNumber, 0);
                     ClientsFacade clientsFacade = new ClientsFacade(client);
                     clientsFacade.insertClient();
-                    System.out.print(client);
                 } else if (i >= 100 && i < 120) {
                     // Create and insert driver
-                    Driver driver = new Driver(usersFacade.loadUserID(), firstName, lastName,
-                            phone, email, address, dateAdded, idNumber, "1434006529317_cv.docx",
-                            plateNumber, subcountyID);
+                    Driver driver = new Driver(usersFacade.loadUserID(), null, null, 0,
+                            firstName, lastName, phone, email, address, dateAdded,
+                            idNumber, "1434006529317_cv.docx", new Truck(plateNumber, 0, 0, null),
+                            new Subcounty(subcountyID, null));
                     DriversFacade driversFacade = new DriversFacade(driver);
                     driversFacade.insertDriver();
                     System.out.print(driver);
                 } else {
                     // Create and insert tout
-                    Tout tout = new Tout(usersFacade.loadUserID(), firstName, lastName, phone,
-                            email, address, dateAdded, idNumber, "1434006529317_cv.docx", plateNumber,
-                            subcountyID, 0);
+                    Tout tout = new Tout(usersFacade.loadUserID(), null, null, 0,
+                            firstName, lastName, phone, email, address, dateAdded,
+                            idNumber, "1434006529317_cv.docx", new Truck(plateNumber, 0, 0, null),
+                            new Subcounty(subcountyID, null));
                     ToutsFacade toutsFacade = new ToutsFacade(tout);
                     toutsFacade.insertTout();
                     System.out.print(tout);
@@ -130,7 +134,7 @@ public class Tester {
             }
         }
     }
-    
+
     public static void loadAllSubcounties() {
         try {
             subcountyList = new SubcountiesFacade().loadAllSubcounties();
@@ -138,7 +142,7 @@ public class Tester {
             Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void loadAllTrucks() {
         try {
             truckList = new TrucksFacade().loadAllTrucks();
@@ -146,7 +150,7 @@ public class Tester {
             Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void loadAllPackages() {
         try {
             packageList = new PackagesFacade().loadAllPackages();
@@ -154,7 +158,7 @@ public class Tester {
             Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void insertAdmin() {
         try {
             User user = new User("admin", PasswordHasher.createHash("burton"), 1);
@@ -164,7 +168,7 @@ public class Tester {
             Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void sendSMS() {
         try {
             System.out.print("Sending...\n");
@@ -178,7 +182,7 @@ public class Tester {
             Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void processInvoices() {
         try {
             new InvoicesFacade().createMonthlyInvoicesForAllClients();
@@ -186,5 +190,5 @@ public class Tester {
             Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
 }

@@ -17,10 +17,8 @@ public class LogisticsManager extends User {
 
     }
 
-    public LogisticsManager(int managerID, String username, String passwordHash) {
-        this.managerID = managerID;
-        this.username = username;
-        this.passwordHash = passwordHash;
+    public LogisticsManager(int managerID, String username, String passwordHash, int isActive) {
+        super(managerID, username, passwordHash, isActive);
     }
 
     public int getManagerID() {

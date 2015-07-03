@@ -10,8 +10,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Container;
+import ncgms.entities.ContainerOrder;
 import ncgms.entities.OrderDetail;
 
 /**
@@ -34,8 +34,9 @@ public class OrderDetailsFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "INSERT INTO `OrderDetails`(`quantity`, `price`, "
                 + "`containerID`, `orderID`) VALUES (\"" + orderDetail.getQuantity()
-                + "\", \"" + orderDetail.getPrice() + "\", \"" + orderDetail.getContainerID()
-                + "\", \"" + orderDetail.getOrderID() + "\")";
+                + "\", \"" + orderDetail.getPrice() + "\", \"" + orderDetail.
+                getContainer().getContainerID() + "\", \"" + orderDetail.
+                getContainerOrder().getOrderID() + "\")";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;
@@ -48,13 +49,13 @@ public class OrderDetailsFacade extends AbstractFacade {
         String query = "SELECT `OrderDetails`.* FROM `Containers` INNER JOIN "
                 + "`OrderDetails` ON `Containers`.`containerID` = "
                 + "`OrderDetails`.`containerID` WHERE `OrderDetails`.`containerID`"
-                + " = \"" + orderDetail.getContainerID() + "\"";
+                + " = \"" + orderDetail.getContainer().getContainerID() + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             // Create a new OrderDetail
             this.orderDetail = new OrderDetail(resultSet.getInt("orderDetailID"),
                     resultSet.getInt("quantity"), resultSet.getDouble("price"),
-                    resultSet.getInt("containerID"), resultSet.getInt("orderID"));
+                    orderDetail.getContainer(), null);
             // Add containerOrder to orderDetailList
             orderDetailList.add(this.orderDetail);
         }
@@ -72,7 +73,8 @@ public class OrderDetailsFacade extends AbstractFacade {
                 + "`Containers` INNER JOIN `OrderDetails` ON `Containers`.`containerID`"
                 + " = `OrderDetails`.`containerID` INNER JOIN `ContainerOrders` "
                 + "ON `OrderDetails`.`orderID` = `ContainerOrders`.`orderID`"
-                + " WHERE `ContainerOrders`.`orderID` = \"" + this.orderDetail.getOrderID() + "\"";
+                + " WHERE `ContainerOrders`.`orderID` = \"" + this.orderDetail.
+                getContainerOrder().getOrderID() + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             // Create a new container
@@ -82,7 +84,9 @@ public class OrderDetailsFacade extends AbstractFacade {
             // Create a new OrderDetail
             this.orderDetail = new OrderDetail(resultSet.getInt("orderDetailID"),
                     resultSet.getInt("quantity"), resultSet.getDouble("price"),
-                    resultSet.getInt("containerID"), resultSet.getInt("orderID"));
+                    new Container(resultSet.getInt("containerID"), null, null, 0, 0.0),
+                    this.orderDetail.getContainerOrder());
+
             // Set the container
             this.orderDetail.setContainer(container);
             orderDetailList.add(this.orderDetail);

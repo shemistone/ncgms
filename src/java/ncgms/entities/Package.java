@@ -17,7 +17,7 @@ public class Package {
     private String packageName;
     private double monthlyRate;
     
-    List<Package> clientList = new ArrayList<>();
+    List<Client> clientList = new ArrayList<>();
     
     
     public Package(){        
@@ -26,6 +26,12 @@ public class Package {
     public Package(String packageName, double monthlyRate) {
         this.packageName = packageName;
         this.monthlyRate = monthlyRate;
+    }
+    
+    public Package(String packageName, double monthlyRate, List<Client> clientList) {
+        this.packageName = packageName;
+        this.monthlyRate = monthlyRate;
+        this.clientList = clientList;
     }
 
     public String getPackageName() {
@@ -44,13 +50,14 @@ public class Package {
         this.monthlyRate = monthlyRate;
     }
 
-    public List<Package> getClientList() {
+    public List<Client> getClientList() {
         return clientList;
     }
 
-    public void setClientList(List<Package> clientList) {
+    public void setClientList(List<Client> clientList) {
         this.clientList = clientList;
     }
+
     
     @Override
     public String toString(){

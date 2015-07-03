@@ -68,7 +68,7 @@ public class AdminToutController implements Serializable {
 
             // Load subcounty names into map
             SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
+            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
 
             ToutsFacade toutsFacade = new ToutsFacade();
             this.toutList = toutsFacade.loadAllTouts();
@@ -116,7 +116,7 @@ public class AdminToutController implements Serializable {
 
             // Load subcounty names into map
             SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
+            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
             /*
              ToutsFacade toutsFacade = new ToutsFacade();
              this.toutList = toutsFacade.loadAllTouts();
@@ -236,7 +236,7 @@ public class AdminToutController implements Serializable {
     public void saveToutChanges(Tout tout) {
         try {
             // Update
-            tout.setPlateNumber(tout.getPlateNumber());
+            tout.getTruck().setPlateNumber(tout.getTruck().getPlateNumber());
             ToutsFacade toutsFacade = new ToutsFacade();
             int result = toutsFacade.updateTout(tout);
             System.out.print(result);

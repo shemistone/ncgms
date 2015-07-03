@@ -175,8 +175,8 @@ public class AdminComplaintController implements Serializable {
 
     public void insertResponse(Complaint complaint) {
         try {
-            Response newResponse = new Response(this.response, new Date().getTime(),
-                    0, complaint.getComplaintID());
+            Response newResponse = new Response(0, this.response, new Date().getTime(),
+                    0, complaint);
             ResponsesFacade responsesFacade = new ResponsesFacade(newResponse);
             int result = responsesFacade.insertResponse();
             if (result == 1) {

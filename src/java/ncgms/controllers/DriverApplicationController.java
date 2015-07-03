@@ -28,6 +28,7 @@ import ncgms.entities.User;
 import ncgms.daos.DriversFacade;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.UsersFacade;
+import ncgms.entities.Truck;
 import ncgms.util.SMSSender;
 
 /**
@@ -111,9 +112,9 @@ public class DriverApplicationController {
             User user = new User(null, null, 0);
             UsersFacade usersFacade = new UsersFacade(user);
             // Create a new driver
-            Driver driver = new Driver(firstName, lastName, phone, email, address,
-                    new Date().getTime(), Integer.valueOf(idNumber), cvName,
-                    new SubcountiesFacade().loadSubcountyIDsMap().get(subcounty));
+            Driver driver = new Driver(0, null, null, 0, firstName, lastName,
+                    phone, email, address, new Date().getTime(), Integer.valueOf(idNumber),
+                    cvName, new Truck(), new SubcountiesFacade().searchSubCountyByName(subcounty));
             DriversFacade driversFacade = new DriversFacade(driver);
 
             // CHeck if driver exists
@@ -126,7 +127,7 @@ public class DriverApplicationController {
                     // Get the userID and set it as the driverID
                     int userID = usersFacade.loadUserID();
                     // Set the driverID
-                    driversFacade.getDriver().setDriverID(userID);
+                    driversFacade.getDriver().setUserID(userID);
 
                     // Now add driver to the database
                     int driverResult = driversFacade.insertDriver();

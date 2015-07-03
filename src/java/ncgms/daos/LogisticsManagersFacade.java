@@ -25,7 +25,8 @@ public class LogisticsManagersFacade extends AbstractFacade{
         ResultSet resultSet = statement.executeQuery(query);
         if (resultSet.next()) {
             this.logisticsManager = new LogisticsManager(resultSet.getInt("managerID"),
-            resultSet.getString("username"), resultSet.getString("passwordHash"));
+            resultSet.getString("username"), resultSet.getString("passwordHash"),
+            resultSet.getInt("isActive"));
             
         }
         disconnect();

@@ -69,7 +69,7 @@ public class AdminDriverController implements Serializable {
 
             // Load subcounty names into map
             SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
+            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
 
             DriversFacade driversFacade = new DriversFacade();
             this.driverList = driversFacade.loadAllDrivers();
@@ -118,7 +118,7 @@ public class AdminDriverController implements Serializable {
 
             // Load subcounty names into map
             SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
+            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
             /*
              DriversFacade driversFacade = new DriversFacade();
              this.driverList = driversFacade.loadAllDrivers();
@@ -239,7 +239,7 @@ public class AdminDriverController implements Serializable {
     public void saveDriverChanges(Driver driver) {
         try {
             // Update
-            driver.setPlateNumber(driver.getPlateNumber());
+            driver.getTruck().setPlateNumber(driver.getTruck().getPlateNumber());
             DriversFacade driversFacade = new DriversFacade();
             int result = driversFacade.updateDriver(driver);
             System.out.print(result);
@@ -295,14 +295,16 @@ public class AdminDriverController implements Serializable {
             DriversFacade driversFacade = new DriversFacade(driver);
             int result = driversFacade.removeDriver();
             if (result == 1) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, "Driver successfully removed.",
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                        "Driver successfully removed.",
                         "Driver successfully removed.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             } else {
                 // Pass
             }
         } catch (SQLException ex) {
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Could not remove driver. Please contact the system administrator",
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Could not remove driver. Please contact the system administrator",
                     "Could not remove driver. Please contact the system administrator");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);

@@ -50,8 +50,8 @@ public class InvoicerTask implements Runnable {
                     UsersFacade usersFacade = new UsersFacade();
                     String messageContent = "Monthly invoices processed at "
                             + new Date().toString() + " for all active clients. NCGMS Inc.";
-                    Message message = new Message(messageContent, new Date().getTime(), 0,
-                            usersFacade.loadUserID());
+                    Message message = new Message(0, messageContent, new Date().getTime(), 0,
+                            new User(0, null, null, usersFacade.loadUserID()));
                     MessagesFacade messagesFacade = new MessagesFacade(message);
                     messagesFacade.insertMessage();
                     // Send sms to client

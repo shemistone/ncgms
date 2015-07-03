@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Subcounty;
 
 /**
@@ -35,7 +34,7 @@ public class SubcountiesFacade extends AbstractFacade{
      * @return
      * @throws SQLException 
      */
-    public  Map<String, Integer> loadSubcountyIDsMap() throws SQLException{
+    /*public  Map<String, Integer> loadSubcountyIDsMap() throws SQLException{
         connect();
         Map<String, Integer> subcountyIDsMap = new HashMap<>();
         Statement statement = connection.createStatement();
@@ -61,7 +60,7 @@ public class SubcountiesFacade extends AbstractFacade{
         }
         disconnect();
         return subcountyNamesMap;
-    }
+    }*/
     
     /**
      * Populate subcounty list
@@ -106,6 +105,7 @@ public class SubcountiesFacade extends AbstractFacade{
     }
 
     public Subcounty searchSubCountyById(int subcountyID) throws SQLException {
+        connect();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Subcounties` WHERE `subcountyID` = \"" 
                 + subcountyID + "\"";
@@ -114,10 +114,12 @@ public class SubcountiesFacade extends AbstractFacade{
             this.subcounty = new Subcounty(resultSet.getInt("subcountyID"),
              resultSet.getString("subcountyName"));
         }
+        disconnect();
         return this.subcounty;
     }
     
     public Subcounty searchSubCountyByName(String subcountyName) throws SQLException {
+        connect();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Subcounties` WHERE `subcountyName` = \"" 
                 + subcountyName + "\"";
@@ -126,6 +128,7 @@ public class SubcountiesFacade extends AbstractFacade{
             this.subcounty = new Subcounty(resultSet.getInt("subcountyID"),
              resultSet.getString("subcountyName"));
         }
+        disconnect();
         return this.subcounty;
     }
     

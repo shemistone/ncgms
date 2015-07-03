@@ -22,9 +22,8 @@ public class Complaint {
     private long dateAdded = 0;
     private String realDateAdded = null;
     // Relationships
-    private int userID = 0;
-    private Client client = null;
-    private List<Response> responseList = new ArrayList<>();    
+    private User user = null;
+    private List<Response> responseList = new ArrayList<>();
 
     /**
      * Default constructor
@@ -35,43 +34,26 @@ public class Complaint {
     /**
      * Overloaded constructor
      *
-     * @param complaint
-     * @param isRead
-     * @param dateAdded
-     * @param userID
-     */
-    public Complaint(String complaint, int isRead, long dateAdded, int userID) {
-        this.complaint = complaint;
-        this.isRead = isRead;
-        this.dateAdded = dateAdded;
-        this.userID = userID;
-    }
-
-    /**
-     * Overloaded constructor     *
-     * @param complaint
-     * @param isRead
-     * @param dateAdded
-     */
-    public Complaint(String complaint, int isRead, long dateAdded) {
-        this.complaint = complaint;
-        this.isRead = isRead;
-        this.dateAdded = dateAdded;
-    }
-
-    /**
-     * Overloaded constructor
-     *
      * @param complaintID
      * @param complaint
      * @param isRead
      * @param dateAdded
+     * @param user
      */
-    public Complaint(int complaintID, String complaint, int isRead, long dateAdded) {
+    public Complaint(int complaintID, String complaint, int isRead, long dateAdded,
+            User user) {
         this.complaintID = complaintID;
         this.complaint = complaint;
         this.isRead = isRead;
         this.dateAdded = dateAdded;
+        this.user = user;
+    }
+
+    public Complaint(String complaint, int isRead, long dateAdded, User user) {
+        this.complaint = complaint;
+        this.isRead = isRead;
+        this.dateAdded = dateAdded;
+        this.user = user;
     }
 
     public List<Response> getResponseList() {
@@ -114,22 +96,6 @@ public class Complaint {
         this.dateAdded = dateAdded;
     }
 
-    public int getUserID() {
-        return userID;
-    }
-
-    public void setUserID(int userID) {
-        this.userID = userID;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
     public String getRealDateAdded() {
         realDateAdded = new Date(dateAdded).toString();
         realDateAdded = realDateAdded.substring(0, realDateAdded.
@@ -143,14 +109,20 @@ public class Complaint {
         this.realDateAdded = realDateAdded;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     @Override
     public String toString() {
         return "\nComplaint ID - " + complaintID
                 + "\nComplaint - " + complaint
                 + "\nisRead - " + isRead
-                + "\nDate Added - " + realDateAdded
-                + "\nUser ID - " + userID
-                + "\nClient - " + client;
+                + "\nDate Added - " + realDateAdded;
     }
 
 }

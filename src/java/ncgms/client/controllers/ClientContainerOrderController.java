@@ -17,9 +17,7 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import ncgms.controllers.LogInLogOutController;
 import ncgms.entities.ContainerOrder;
-import ncgms.entities.User;
 import ncgms.daos.ContainerOrdersFacade;
-import ncgms.daos.UsersFacade;
 import ncgms.entities.Client;
 
 /**
@@ -59,7 +57,7 @@ public class ClientContainerOrderController implements Serializable{
             
             // Create a new containerOrder and set the clientID
             ContainerOrder containerOrder = new ContainerOrder();
-            containerOrder.setClientID(client.getClientID());
+            containerOrder.setClient(client);
             
             // Create a new ContainerOrdersFacade
             ContainerOrdersFacade containerOrdersFacade = new ContainerOrdersFacade(containerOrder);

@@ -28,26 +28,26 @@ public class Client extends User {
     private int idNumber = 0;
     private int wantsToCancel = 0;
     // Relationships
-    private int subcountyID = 0;
     private Subcounty subcounty = null;
-    private String packageName = null;
     private Package packageObject = null;
-    private String plateNumber = null;
     private Truck truck = null;
     private List<Invoice> invoiceList = new ArrayList<>();
     private List<ContainerOrder> containerOrderList = new ArrayList<>();
 
     // Flags
     private boolean editable = false;
+    
     /**
      * Default constructor
      */
     public Client() {
     }
-
-    public Client(String firstName, String lastName, String address,
-            String phone, String email, String plotName, long dateAdded,
-            int idNumber, int subcountyID, String pacakgeName) {
+    
+    public Client(int userID, String username, String passwordHash,int isActive, String firstName, 
+            String lastName, String address, String phone, String email, String plotName,
+            long dateAdded, int idNumber, int wantsToCancel){
+        super(userID, username, passwordHash, isActive);
+        this.clientID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
@@ -56,52 +56,15 @@ public class Client extends User {
         this.plotName = plotName;
         this.dateAdded = dateAdded;
         this.idNumber = idNumber;
-        this.subcountyID = subcountyID;
-        this.packageName = pacakgeName;
-    }
-
-    public Client(int clientID, String firstName, String lastName,
-            String address, String phone, String email, String plotName,
-            long dateAdded, int idNumber, int subcountyID, String plateNumber,
-            int isActive) {
-        this.clientID = clientID;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.phone = phone;
-        this.email = email;
-        this.plotName = plotName;
-        this.dateAdded = dateAdded;
-        this.idNumber = idNumber;
-        this.subcountyID = subcountyID;
-        this.plateNumber = plateNumber;
-        this.isActive = isActive;
-    }
-
-    public Client(int clientID, String firstName, String lastName,
-            String address, String phone, String email, String plotName,
-            long dateAdded, int idNumber, int subcountyID, String plateNumber,
-            int isActive, int wantsToCancel) {
-        this.clientID = clientID;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.phone = phone;
-        this.email = email;
-        this.plotName = plotName;
-        this.dateAdded = dateAdded;
-        this.idNumber = idNumber;
-        this.subcountyID = subcountyID;
-        this.plateNumber = plateNumber;
-        this.isActive = isActive;
         this.wantsToCancel = wantsToCancel;
     }
     
-    public Client(int clientID, String firstName, String lastName,
-            String address, String phone, String email, String plotName,
-            long dateAdded, int idNumber, int subcountyID, String plateNumber,
-            String packageName, int isActive, int wantsToCancel) {
-        this.clientID = clientID;
+    public Client(int userID, String username, String passwordHash,int isActive, String firstName, 
+            String lastName, String address, String phone, String email, String plotName,
+            long dateAdded, int idNumber, int wantsToCancel, Subcounty subcounty, 
+            Truck truck, Package packageObject){
+        super(userID, username, passwordHash, isActive);
+        this.clientID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
@@ -110,17 +73,19 @@ public class Client extends User {
         this.plotName = plotName;
         this.dateAdded = dateAdded;
         this.idNumber = idNumber;
-        this.subcountyID = subcountyID;
-        this.plateNumber = plateNumber;
-        this.packageName = packageName;
-        this.isActive = isActive;
         this.wantsToCancel = wantsToCancel;
+        this.subcounty = subcounty;
+        this.truck = truck;
+        this.packageObject = packageObject;
     }
 
-    public Client(int clientID, String firstName, String lastName,
-            String address, String phone, String email, String plotName,
-            long dateAdded, int idNumber, int subcountyID, String plateNumber) {
-        this.clientID = clientID;
+    public Client(int userID, String username, String passwordHash,int isActive, String firstName, 
+            String lastName, String address, String phone, String email, String plotName,
+            long dateAdded, int idNumber, int wantsToCancel, Subcounty subcounty, 
+            Truck truck, Package packageObject, List<Invoice> invoiceList, 
+            List<ContainerOrder> containerOrderList){
+        super(userID, username, passwordHash, isActive);
+        this.clientID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
@@ -129,29 +94,15 @@ public class Client extends User {
         this.plotName = plotName;
         this.dateAdded = dateAdded;
         this.idNumber = idNumber;
-        this.subcountyID = subcountyID;
-        this.plateNumber = plateNumber;
+        this.wantsToCancel = wantsToCancel;
+        this.subcounty = subcounty;
+        this.truck = truck;
+        this.packageObject = packageObject;
+        this.invoiceList = invoiceList;
+        this.containerOrderList = containerOrderList;
     }
 
-    public Client(String username, String passwordHash, int isActive,
-            int clientID, String firstName, String lastName, String address,
-            String phone, String email, String plotName, long dateAdded,
-            int idNumber, int subcountyID, String plateNumber) {
-        super(username, passwordHash, isActive);
-        this.clientID = clientID;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.phone = phone;
-        this.email = email;
-        this.plotName = plotName;
-        this.dateAdded = dateAdded;
-        this.idNumber = idNumber;
-        this.subcountyID = subcountyID;
-        this.plateNumber = plateNumber;
-        this.isActive = isActive;
-    }
-
+    
     public List<Invoice> getInvoiceList() {
         return invoiceList;
     }
@@ -261,30 +212,6 @@ public class Client extends User {
         this.wantsToCancel = wantsToCancel;
     }
 
-    public int getSubcountyID() {
-        return subcountyID;
-    }
-
-    public void setSubcountyID(int subcountyID) {
-        this.subcountyID = subcountyID;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    public String getPlateNumber() {
-        return plateNumber;
-    }
-
-    public void setPlateNumber(String plateNumber) {
-        this.plateNumber = plateNumber;
-    }
-
     public Subcounty getSubcounty() {
         return subcounty;
     }
@@ -320,8 +247,7 @@ public class Client extends User {
     
     @Override
     public String toString() {
-        return "\nClient ID - " + clientID
-                + "\nFirst name - " + firstName
+        return "\nFirst name - " + firstName
                 + "\nLast name - " + lastName
                 + "\nAddress - " + address
                 + "\nEmail - " + email
@@ -330,8 +256,7 @@ public class Client extends User {
                 + "\nID Number - " + idNumber
                 + "\nWants to Cancel - " + wantsToCancel
                 + "\nDate Added - " + dateAdded
-                + "\nSub-County - " + subcountyID
-                + "\nPackage Name - " + packageName
+                + "\nClient ID - " + clientID
                 + "\nUsername - " + username
                 + "\nPassword Hash- " + passwordHash
                 + "\nIs Active - " + isActive;

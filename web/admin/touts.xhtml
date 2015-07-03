@@ -92,7 +92,7 @@
                     <f:facet name="header">
                         <h:outputText value="Subcounty" rendered="#{adminToutController.toutList.size() != 0}"/>
                     </f:facet>
-                    <h:outputText value="#{adminToutController.subcountyNamesMap.get(toutElement.subcountyID)}"/>
+                    <h:outputText value="#{adminToutController.subcountyNamesMap.get(toutElement.subcounty.subcountyID)}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
@@ -104,10 +104,10 @@
                     <f:facet name="header">
                         <h:outputText value="Assigned Truck" rendered="#{adminToutController.toutList.size() != 0}"/>
                     </f:facet>
-                    <h:inputText value="#{toutElement.plateNumber}" rendered="#{!toutElement.editable}"
+                    <h:outputText value="#{toutElement.truck.plateNumber}" rendered="#{!toutElement.editable}"
                                  style="height: 20px; width: 100%; display: inline-block;border: none;
                                  background-color: transparent"/>
-                    <h:selectOneMenu value="#{toutElement.plateNumber}" rendered="#{toutElement.editable}"
+                    <h:selectOneMenu value="#{toutElement.truck.plateNumber}" rendered="#{toutElement.editable}"
                                      style="width: 100%; height: 25px">
                         <f:selectItems value="#{adminToutController.plateNumberList}"/>
                     </h:selectOneMenu>
