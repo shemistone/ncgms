@@ -24,11 +24,13 @@ import javax.servlet.http.Part;
 import javax.validation.constraints.Pattern;
 import ncgms.client.controllers.ClientApplicationController;
 import ncgms.entities.Driver;
-import ncgms.entities.User;
 import ncgms.daos.DriversFacade;
+import ncgms.daos.MessagesFacade;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.UsersFacade;
+import ncgms.entities.Message;
 import ncgms.entities.Truck;
+import ncgms.entities.User;
 import ncgms.util.SMSSender;
 
 /**
@@ -78,43 +80,52 @@ public class DriverApplicationController {
             SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
             this.subcountyList = subcountiesFacade.populateSubcountyList();
         } catch (SQLException ex) {
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Could not populate subcounty list.", "Could not populate subcounty list.");
+            FacesMessage facesMessage = new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Could not populate subcounty list.",
+                    "Could not populate subcounty list.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-            java.util.logging.Logger.getLogger(
-                    ClientApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientApplicationController.class.getName()).
+                    log(Level.SEVERE, null, ex);
         }
     }
 
-    public synchronized void insertDriverAndUser() {
-
+    public String uploadFile() throws IOException{
         // Get the absolute path of the application
         ServletContext sc = (ServletContext) FacesContext.getCurrentInstance()
                 .getExternalContext().getContext();
         String cvName = sc.getRealPath("/");
-
-        try (InputStream is = file.getInputStream()) {
-
-            /* Start file upload */
+        
+        try(InputStream is = file.getInputStream()){
+        /* Start file upload */
             byte[] b = new byte[(int) file.getSize()];
             is.read(b);
             // Get the absolute path of the uploaded file
             cvName = cvName + "resources/uploads/cvs/" + String.valueOf(
                     new Date().getTime()) + "_" + file.getSubmittedFileName();
             FileOutputStream os = new FileOutputStream(cvName);
-            os.write(b);
+            os.write(b);System.out.print(cvName);
             // Restore the relative path of the uploade file
             cvName = cvName.substring(cvName.indexOf("resources/uploads/cvs/")
                     + "resources/uploads/cvs/".length());
             /* Finish file upload */
+        }
+        return cvName;
+    }
+    
+    public synchronized void insertDriver() {
 
-            // Create a new user
-            User user = new User(null, null, 0);
-            UsersFacade usersFacade = new UsersFacade(user);
+        try {
+
+            /* Start file upload */
+           String cvName = uploadFile();
+            /* Finish file upload */
+
             // Create a new driver
             Driver driver = new Driver(0, null, null, 0, firstName, lastName,
                     phone, email, address, new Date().getTime(), Integer.valueOf(idNumber),
                     cvName, new Truck(), new SubcountiesFacade().searchSubCountyByName(subcounty));
+            UsersFacade usersFacade = new UsersFacade(driver);
             DriversFacade driversFacade = new DriversFacade(driver);
 
             // CHeck if driver exists
@@ -132,15 +143,26 @@ public class DriverApplicationController {
                     // Now add driver to the database
                     int driverResult = driversFacade.insertDriver();
                     if (driverResult == 1) {
-                        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        FacesMessage facesMessage = new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
                                 "Your application has been received.",
                                 "Your application has been  received.");
                         FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                         this.address = this.email = this.firstName = this.idNumber
                                 = this.lastName = this.phone = this.subcounty = null;
                         // Notify admin
-                        SMSSender.sendSmsSynchronous("0721868821", "Hello admin, you have a new driver"
-                                + " driver application. NCGMS Inc.");
+                        String moblieMessage = "Hello admin, you have a new"
+                                + " driver application. NCGMS Inc.";
+                        SMSSender.sendSmsSynchronous("0721868821",
+                                moblieMessage);
+                        String systemMessage = "Hello admin, you have a new"
+                                + " driver application.";
+                        User admin = new User(new UsersFacade().loadAdminUserID(),
+                                "admin", null, 1);
+                        Message message = new Message(systemMessage, new Date().getTime(),
+                                0, admin);
+                        MessagesFacade messagesFacade = new MessagesFacade(message);
+                        messagesFacade.insertMessage();
                     } else {
                         // Pass
                     }
@@ -150,7 +172,8 @@ public class DriverApplicationController {
                 }
 
             } else {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                FacesMessage facesMessage = new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
                         "Application failed - You have already applied",
                         "Application failed - You have already applied");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
@@ -161,9 +184,11 @@ public class DriverApplicationController {
                     "Could not process application.", "Could not process application.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             java.util.logging.Logger.getLogger(
-                    DriverApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+                    DriverApplicationController.class.getName()).
+                    log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
-            Logger.getLogger(DriverApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DriverApplicationController.class.getName()).
+                    log(Level.SEVERE, null, ex);
         }
     }
 
@@ -179,8 +204,8 @@ public class DriverApplicationController {
             }
             // Check the file type
             if (!"application/msword".equals(file.getContentType())
-                    && !"application/vnd.openxmlformats-officedocument.wordprocessingml.document".equals(
-                            file.getContentType())) {
+                    && !"application/vnd.openxmlformats-officedocument.wordprocessingml.document".
+                            equals(file.getContentType())) {
                 error = "File should be a microsoft word file";
                 throw new ValidatorException(new FacesMessage(
                         FacesMessage.SEVERITY_ERROR, error, error));

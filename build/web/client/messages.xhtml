@@ -22,21 +22,29 @@
         <!--Messages Form-->
         <h:form>       
             <h1>Recent Messages</h1>
-            <h:outputText value="You have no Messages" rendered="#{messageController.messageList.size() == 0}"/><br />
+            <h:outputText value="You have no Messages" 
+                          rendered="#{messageController.messageList.size() == 0}"/><br />
 
-            <h:outputText class="pages" value="Page #{messageController.currentPage} of #{messageController.noOfPages}"
+            <h:outputText class="pages" value="Page #{messageController.currentPage}
+                          of #{messageController.noOfPages}"
                           rendered="#{messageController.messageList.size() != 0}"/>
 
-            <h:commandLink action="#{messageController.previousMessagePage}" rendered="#{messageController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+            <h:commandLink action="#{messageController.previousMessagePage}" 
+                           rendered="#{messageController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{messageController.nextMessagePage}" rendered="#{messageController.nextRendered}">
-                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+            <h:commandLink action="#{messageController.nextMessagePage}" 
+                           rendered="#{messageController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" 
+                                    style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{messageController.refreshMessages}" rendered="#{messageController.messageList.size() != 0}">
-                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+            <h:commandLink action="#{messageController.refreshMessages}" 
+                           rendered="#{messageController.messageList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" 
+                                style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
 
@@ -45,38 +53,56 @@
                          rendered="#{messageController.messageList.size() != 0}">
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Date Received" rendered="#{messageController.messageList.size() != 0}"/>
+                        <h:outputText value="Date Received" 
+                                      rendered="#{messageController.messageList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="#{messageElement.realDateAdded}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Message" rendered="#{messageController.messageList.size() != 0}"/>
+                        <h:outputText value="Message" 
+                                      rendered="#{messageController.messageList.size() != 0}"/>
                     </f:facet>
                     <h:column>
                         <h:outputText value="#{messageElement.message}"/>
                     </h:column>
                 </h:column>   
                 <h:column>
-                    <h:commandLink action="#{messageController.markMessageAsRead(messageElement)}" rendered="#{messageElement.isRead != 1}">
-                        <h:graphicImage library="icons" name="read.png" style="margin: 0 2px -2px 0"/>Mark as read
+                    <h:commandLink action="#{messageController.markMessageAsRead(messageElement)}" 
+                                   rendered="#{messageElement.isRead != 1}">
+                        <h:graphicImage library="icons" name="read.png" 
+                                        style="margin: 0 2px -2px 0"/>Mark as read
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>
-                </h:column> 
+                </h:column>
+                <h:column>
+                    <h:commandLink action="#{messageController.removeMessage(messageElement)}">
+                        <h:graphicImage library="icons" name="delete.png" 
+                                        style="margin: 0 2px -2px 0"/>Delete
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column>
             </h:dataTable>
-            <h:outputText class="pages" value="Page #{messageController.currentPage} of #{messageController.noOfPages}"
+            <h:outputText class="pages" value="Page #{messageController.currentPage} 
+                          of #{messageController.noOfPages}"
                           rendered="#{messageController.messageList.size() != 0}"/>
 
-            <h:commandLink action="#{messageController.previousMessagePage}" rendered="#{messageController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+            <h:commandLink action="#{messageController.previousMessagePage}" 
+                           rendered="#{messageController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{messageController.nextMessagePage}" rendered="#{messageController.nextRendered}">
-                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+            <h:commandLink action="#{messageController.nextMessagePage}" 
+                           rendered="#{messageController.nextRendered}">
+                Next<h:graphicImage library="icons" name="next.png" 
+                                    style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{messageController.refreshMessages}" rendered="#{messageController.messageList.size() != 0}">
-                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+            <h:commandLink action="#{messageController.refreshMessages}" 
+                           rendered="#{messageController.messageList.size() != 0}">
+                <h:graphicImage library="icons" name="refresh.png" 
+                                style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
         </h:form>

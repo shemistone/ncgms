@@ -31,6 +31,13 @@ public class Message {
         this.isRead = isRead;
         this.user = user;
     }
+    
+    public Message(String message, long dateAdded, int isRead, User user) {
+        this.message = message;
+        this.dateAdded = dateAdded;
+        this.isRead = isRead;
+        this.user = user;
+    }
 
     public int getMessageID() {
         return messageID;

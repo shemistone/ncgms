@@ -67,13 +67,14 @@
             <br />   
 
             <label for="cv">Upload curriculum vitae:*</label>
-            <h:inputFile id="cv" validator="#{toutApplicationController.validateFile}" value="#{toutApplicationController.file}"/>
+            <h:inputFile id="cv" validator="#{toutApplicationController.validateFile}" 
+                         value="#{toutApplicationController.file}"/>
             <h:message for="cv" errorClass="error" infoClass="info"/>
             <br />
             <hr />
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
 
-            <h:commandButton value="Submit Application" action="#{toutApplicationController.insertToutAndUser}">
+            <h:commandButton value="Submit Application" action="#{toutApplicationController.insertTout}">
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandButton>
 

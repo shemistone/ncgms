@@ -26,9 +26,11 @@ import ncgms.entities.Client;
  */
 @ManagedBean
 @SessionScoped
-public class ClientContainerOrderController implements Serializable{
+public class ClientContainerOrderController implements Serializable {
 
-   private List<ContainerOrder> containerOrderList = new ArrayList<>();
+    private String searchTerm = null;
+
+    private List<ContainerOrder> containerOrderList = new ArrayList<>();
     private List<ContainerOrder> viewableContainerOrderList = new ArrayList<>();
     private boolean noContainerOrdersRendered = false;
 
@@ -47,18 +49,18 @@ public class ClientContainerOrderController implements Serializable{
         initializeContainerOrderList();
     }
 
-    private void initializeContainerOrderList(){
+    private void initializeContainerOrderList() {
         try {
             // Initialize the variables for navigation
             currentContainerOrderIndex = 0;
             currentPage = 1;
             // Create user object for current client            
             Client client = (Client) new LogInLogOutController().getClientFromSession();
-            
+
             // Create a new containerOrder and set the clientID
             ContainerOrder containerOrder = new ContainerOrder();
             containerOrder.setClient(client);
-            
+
             // Create a new ContainerOrdersFacade
             ContainerOrdersFacade containerOrdersFacade = new ContainerOrdersFacade(containerOrder);
             this.containerOrderList = containerOrdersFacade.loadClientContainerOrders();
@@ -86,15 +88,16 @@ public class ClientContainerOrderController implements Serializable{
             }
             /* Initialize the containerOrders */
         } catch (SQLException ex) {
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Could not initialize container order list.",
                     "Could not initialize container orders list.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-            Logger.getLogger(ClientContainerOrderController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientContainerOrderController.class.getName()).
+                    log(Level.SEVERE, null, ex);
         }
 
     }
-    
+
     public void nextContainerOrderPage() {
 
         // Check if index is more than containerOrderList size
@@ -175,11 +178,58 @@ public class ClientContainerOrderController implements Serializable{
 
     }
 
-    
-    public void refreshContainerOrders(){
+    public void searchContainerOrders(int clientID) {
+        try {
+            ContainerOrdersFacade contaierOrdersFacade = new ContainerOrdersFacade();
+            this.containerOrderList = contaierOrdersFacade.
+                    searchContainerOrderByOrderNumber(searchTerm, clientID);
+            //System.out.print(this.containerOrderList.size());
+        } catch (SQLException ex) {
+            Logger.getLogger(ClientContainerController.class.getName()).
+                    log(Level.SEVERE, null, ex);
+        } finally {
+            if (this.containerOrderList.isEmpty()) {
+                this.initializeContainerOrderList();
+                FacesMessage facesMessage = new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
+                        "No Results",
+                        "No Results");
+                FacesContext.getCurrentInstance().addMessage(
+                        "container_orders_form:search_button",
+                        facesMessage);
+            } else {
+                this.searchTerm = null;
+                initializeResultList();
+            }
+        }
+    }
+
+    public void initializeResultList() {
+        currentContainerOrderIndex = 0;
+        currentPage = 1;
+        this.noOfPages = this.containerOrderList.size() / 10;
+        if (this.containerOrderList.size() % 10 > 0) {
+            this.noOfPages = this.noOfPages + 1;
+        }
+        this.viewableContainerOrderList = new ArrayList<>();
+        int index;
+        if (this.containerOrderList.size() >= 10) {// if there are more than 10 containerOrders
+
+            // Set the first 10 containerOrders
+            for (index = 0; index <= 9; index++) {
+                this.viewableContainerOrderList.add(this.containerOrderList.get(index));
+            }
+            currentContainerOrderIndex = index;
+        } else {
+            this.viewableContainerOrderList = this.containerOrderList;
+            currentContainerOrderIndex = this.viewableContainerOrderList.size();
+        }
+    }
+
+    public void refreshContainerOrders() {
         this.initializeContainerOrderList();;
     }
-    
+
     public List<ContainerOrder> getContainerOrderList() {
         return containerOrderList;
     }
@@ -244,5 +294,12 @@ public class ClientContainerOrderController implements Serializable{
         this.previousRendered = previousRendered;
     }
 
-    
+    public String getSearchTerm() {
+        return searchTerm;
+    }
+
+    public void setSearchTerm(String searchTerm) {
+        this.searchTerm = searchTerm;
+    }
+
 }

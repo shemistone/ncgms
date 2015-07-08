@@ -191,8 +191,8 @@ public class LogInLogOutController implements Serializable {
                 // Check if the user has been approved by the administrator
                 if (!usersFacade.isActive()) {
                     FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Application not yet approved, try again later",
-                            "Application not yet approved, try again later");
+                            "Pending approval, try again later",
+                            "Pending approval, try again later");
                     FacesContext.getCurrentInstance().addMessage("user_log_in_form:password",
                             facesMessage);
                     return "/log_in";

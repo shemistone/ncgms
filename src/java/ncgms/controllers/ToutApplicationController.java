@@ -24,12 +24,14 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.Part;
 import javax.validation.constraints.Pattern;
 import ncgms.client.controllers.ClientApplicationController;
+import ncgms.daos.MessagesFacade;
 import ncgms.entities.Tout;
-import ncgms.entities.User;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.ToutsFacade;
 import ncgms.daos.UsersFacade;
+import ncgms.entities.Message;
 import ncgms.entities.Truck;
+import ncgms.entities.User;
 import ncgms.util.SMSSender;
 
 /**
@@ -87,33 +89,42 @@ public class ToutApplicationController implements Serializable {
         }
     }
 
-    public synchronized void insertToutAndUser() {
+    public String uploadFile() throws IOException{
         // Get the absolute path of the application
-        ServletContext sc = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+        ServletContext sc = (ServletContext) FacesContext.getCurrentInstance()
+                .getExternalContext().getContext();
         String cvName = sc.getRealPath("/");
-
-        try (InputStream is = file.getInputStream()) {
-
-            /* Start file upload */
+        
+        try(InputStream is = file.getInputStream()){
+        /* Start file upload */
             byte[] b = new byte[(int) file.getSize()];
             is.read(b);
             // Get the absolute path of the uploaded file
             cvName = cvName + "resources/uploads/cvs/" + String.valueOf(
                     new Date().getTime()) + "_" + file.getSubmittedFileName();
             FileOutputStream os = new FileOutputStream(cvName);
-            os.write(b);
+            os.write(b);System.out.print(cvName);
             // Restore the relative path of the uploade file
             cvName = cvName.substring(cvName.indexOf("resources/uploads/cvs/")
                     + "resources/uploads/cvs/".length());
             /* Finish file upload */
+        }
+        return cvName;
+    }
+    
+    public synchronized void insertTout() {
+        
+        try {
 
-            // Create a new user
-            User user = new User(null, null, 0);
-            UsersFacade usersFacade = new UsersFacade(user);
+            /* Start file upload */
+           String cvName = uploadFile();
+            /* Finish file upload */
+
             // Create a new tout
             Tout tout = new Tout(0, null, null, 0, firstName, lastName,
                     phone, email, address, new Date().getTime(), Integer.valueOf(idNumber),
                     cvName, new Truck(), new SubcountiesFacade().searchSubCountyByName(subcounty));
+            UsersFacade usersFacade = new UsersFacade(tout);
             ToutsFacade toutsFacade = new ToutsFacade(tout);
 
             // CHeck if tout exists
@@ -131,15 +142,26 @@ public class ToutApplicationController implements Serializable {
                     // Now add tout to the database
                     int toutResult = toutsFacade.insertTout();
                     if (toutResult == 1) {
-                        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                        FacesMessage facesMessage = new FacesMessage(
+                                FacesMessage.SEVERITY_INFO, 
                                 "Your application has been received",
                                 "Your application has been received");
                         FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                         this.address = this.email = this.firstName = this.idNumber
                                 = this.lastName = this.phone = this.subcounty = null;
                         // Notify admin
-                        SMSSender.sendSmsSynchronous("0721868821", "Hello admin, you have a new driver"
-                                + " sanitation worker application. NCGMS Inc.");
+                        String mobileMessage = "Hello admin, you have a new"
+                                + " sanitation worker application. NCGMS Inc.";                        
+                        SMSSender.sendSmsSynchronous("0721868821",
+                                mobileMessage);
+                        String systemMessage = "Hello admin, you have a new"
+                                + " sanitation worker application.";
+                        User admin = new User(new UsersFacade().loadAdminUserID(),
+                                "admin", null, 1);
+                        Message message = new Message(systemMessage, new Date().getTime(),
+                                0, admin);
+                        MessagesFacade messagesFacade = new MessagesFacade(message);
+                        messagesFacade.insertMessage();
                     } else {
                         // Pass
                     }

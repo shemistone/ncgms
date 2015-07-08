@@ -34,7 +34,6 @@ public class AdminContainerOrderController implements Serializable {
 
     private List<ContainerOrder> containerOrderList = new ArrayList<>();
     private List<ContainerOrder> viewableContainerOrderList = new ArrayList<>();
-    private boolean noContainerOrdersRendered = false;
 
     /* For navigation */
     private int noOfPages = 0;
@@ -244,7 +243,6 @@ public class AdminContainerOrderController implements Serializable {
             }
 
         }
-
         
     }
     
@@ -275,14 +273,17 @@ public class AdminContainerOrderController implements Serializable {
                     break;
             }
         } catch (SQLException ex) {
-            Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AdminContainerOrderController.class.getName()).
+                    log(Level.SEVERE, null, ex);
         } finally {
             if (this.containerOrderList.isEmpty()) {
                 this.initializeContainerOrderList();
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                FacesMessage facesMessage = new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR, 
                         "No Results",
                         "No Results");
-                FacesContext.getCurrentInstance().addMessage("container_orders_form:search_button",
+                FacesContext.getCurrentInstance().addMessage(
+                        "container_orders_form:search_button",
                         facesMessage);
             } else {
                 this.searchTerm = null;
@@ -329,14 +330,6 @@ public class AdminContainerOrderController implements Serializable {
 
     public void setViewableContainerOrderList(List<ContainerOrder> viewableContainerOrderList) {
         this.viewableContainerOrderList = viewableContainerOrderList;
-    }
-
-    public boolean isNoContainerOrdersRendered() {
-        return containerOrderList.isEmpty();
-    }
-
-    public void setNoContainerOrdersRendered(boolean noContainerOrdersRendered) {
-        this.noContainerOrdersRendered = noContainerOrdersRendered;
     }
 
     public int getNoOfPages() {

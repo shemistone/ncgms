@@ -215,7 +215,7 @@ public class AdminInvoiceController implements Serializable {
                     break;
             }
         } catch (SQLException ex) {
-            Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AdminInvoiceController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             if (this.invoiceList.isEmpty()) {
                 this.initializeInvoiceList();

@@ -72,6 +72,16 @@ public class MessagesFacade extends AbstractFacade {
         return result;
     }
 
+    public int removeMessage() throws SQLException {
+        connect();
+        Statement statement = connection.createStatement();
+        String query = "DELETE FROM `Messages` WHERE "
+                + " `messageID` = \"" + message.getMessageID() + "\"";
+        int result = statement.executeUpdate(query);
+        disconnect();
+        return result;
+    }
+    
     public Message getMessage() {
         return message;
     }

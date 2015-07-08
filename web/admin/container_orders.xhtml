@@ -43,11 +43,13 @@
             <h:message for="search_button" errorClass="error" infoClass="info"/><br />
 
             <h:outputText class="pages" 
-                          value="Page #{adminContainerOrderController.currentPage} of #{adminContainerOrderController.noOfPages}"
+                          value="Page #{adminContainerOrderController.currentPage} 
+                          of #{adminContainerOrderController.noOfPages}"
                           rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
             <h:commandLink action="#{adminContainerOrderController.previousContainerOrderPage}" 
                            rendered="#{adminContainerOrderController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:commandLink action="#{adminContainerOrderController.nextContainerOrderPage}" 
@@ -66,44 +68,51 @@
                          rendered="#{adminContainerOrderController.containerOrderList.size() != 0}">
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Status" rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
+                        <h:outputText value="Status" 
+                                      rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="Approved" rendered="#{containerOrderElement.isApproved == 1}"/>
                     <h:outputText value="Not Approved" rendered="#{containerOrderElement.isApproved != 1}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Order No" rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
+                        <h:outputText value="Order No" 
+                                      rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="#{containerOrderElement.orderID}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Date Placed" rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
+                        <h:outputText value="Date Placed" 
+                                      rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="#{containerOrderElement.realDateAdded}"/>
                 </h:column>                        
                 <h:column>    
                     <f:facet name="header">
-                        <h:outputText value="Plot Name" rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
+                        <h:outputText value="Plot Name" 
+                                      rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="#{containerOrderElement.client.plotName}"/><br />
                 </h:column>
                 <h:column>         
                     <f:facet name="header">
-                        <h:outputText value="Client Name" rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
+                        <h:outputText value="Client Name" 
+                                      rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="#{containerOrderElement.client.firstName} #{containerOrderElement.client.lastName}"/><br />
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Total Price" rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
+                        <h:outputText value="Total Price" 
+                                      rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="KShs: #{containerOrderElement.totalPrice}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Order Details" rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
+                        <h:outputText value="Order Details" 
+                                      rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
                     </f:facet>
                     <h:dataTable value="#{containerOrderElement.orderDetailList}" 
                                  styleClass="outer_table" var="orderDetailElement"
@@ -141,12 +150,14 @@
                     </h:commandLink>
                 </h:column>
             </h:dataTable>
-            <h:outputText class="pages" value="Page #{adminContainerOrderController.currentPage} of #{adminContainerOrderController.noOfPages}"
+            <h:outputText class="pages" value="Page #{adminContainerOrderController.currentPage} 
+                          of #{adminContainerOrderController.noOfPages}"
                           rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
 
             <h:commandLink action="#{adminContainerOrderController.previousContainerOrderPage}" 
                            rendered="#{adminContainerOrderController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:commandLink action="#{adminContainerOrderController.nextContainerOrderPage}" 

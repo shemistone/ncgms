@@ -309,8 +309,15 @@ public class AdminToutController implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
+            // Get current page
+            int page = this.currentPage;
             // Initialize tout list
             this.initializeToutList();
+            // Go back to current page
+            for(int i = 1; i < page; i++){
+                nextToutPage();
+            }
+
         }
 
     }

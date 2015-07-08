@@ -309,8 +309,15 @@ public class AdminDriverController implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
+            // Get current page
+            int page = this.currentPage;
             // Initialize driver list
             this.initializeDriverList();
+            // Go back to current page
+            for(int i = 1; i < page; i++){
+                nextDriverPage();
+            }
+
         }
 
     }

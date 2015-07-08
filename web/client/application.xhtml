@@ -102,7 +102,7 @@
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
 
             <h:commandButton value="Submit Application" 
-                             action="#{clientApplicationController.insertClientAndUser}">
+                             action="#{clientApplicationController.insertClient}">
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandButton>
         </h:form>

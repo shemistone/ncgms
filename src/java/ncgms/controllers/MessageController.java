@@ -55,10 +55,9 @@ public class MessageController implements Serializable {
             this.noOfUnreadMessages = 0;
             // Get user from session
             User user = new LogInLogOutController().getUserFromSession();
-            if(user == null){
+            if (user == null) {
                 user = new User();
             }
-            UsersFacade usersFacade = new UsersFacade(user);
 
             // Create a new Message MessagesFacade for loading messages
             Message message = new Message();
@@ -195,6 +194,32 @@ public class MessageController implements Serializable {
             Logger.getLogger(MessageController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    public void removeMessage(Message message) {
+        try {
+            // Create a new MessagesFacade
+            MessagesFacade messagesFacade = new MessagesFacade(message);
+            int result = messagesFacade.removeMessage();
+            if (result == 1) {
+                // Decrement the number of unread messages
+                noOfUnreadMessages--;
+            } else {
+                //Pass
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(MessageController.class.getName()).
+                    log(Level.SEVERE, null, ex);
+        } finally {
+            // Get current page
+            int page = this.currentPage;
+            // Initialize client list
+            this.initializeMessageList();
+            // Go back to current page
+            for (int i = 1; i < page; i++) {
+                nextMessagePage();
+            }
+        }
     }
 
     public void refreshMessages() {

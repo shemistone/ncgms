@@ -19,11 +19,24 @@
         Left
     </ui:define>
     <ui:define name="content">
-        <h:form>
+        <h:form id="container_orders_form">
             <h1>Recent Container Orders</h1>
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
             <h:outputText value="You have no container orders" rendered="#{clientContainerOrderController.containerOrderList.size() == 0}"/><br />
-
+            
+            <h:outputLabel for="search" value="Enter Order ID: " 
+                           rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+            <h:inputText id="search" value="#{clientContainerOrderController.searchTerm}" 
+                         rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+            <h:commandLink action="#{clientContainerOrderController.
+                                     searchContainerOrders(logInLogOutController.client.clientID)}" 
+                           id="search_button" 
+                           rendered="#{clientContainerOrderController.containerOrderList.size() != 0}">
+                <h:graphicImage library="icons" name="search.png" style="margin: 0 2px -2px 0"/>Search
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:message for="search_button" errorClass="error" infoClass="info"/><br />
+            
             <h:outputText class="pages" value="Page #{clientContainerOrderController.currentPage} of #{clientContainerOrderController.noOfPages}"
                           rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
 

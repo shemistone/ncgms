@@ -64,16 +64,15 @@
             <h:dataTable value="#{adminInvoiceController.viewableInvoiceList}" 
                          styleClass="outer_table" var="invoiceElement"
                          rendered="#{adminInvoiceController.invoiceList.size() != 0}">
-
                 <h:column>
                     <f:facet name="header">
                         <h:outputText value="Status" 
                                       rendered="#{adminInvoiceController.invoiceList.size()  != 0}"/>
                     </f:facet>
                     <h:outputText value="Cleared" 
-                                  rendered="#{(invoiceElement.balance) ge (invoiceElement.amountDue)}"/>
+                                  rendered="#{invoiceElement.balance le 0}"/>
                     <h:outputText value="Not Cleared"
-                                  rendered="#{(invoiceElement.balance) lt (invoiceElement.amountDue)}"/>
+                                  rendered="#{invoiceElement.balance gt 0}"/>
                 </h:column> 
 
                 <h:column>
@@ -123,8 +122,7 @@
                     </f:facet>
                     <h:outputText value="#{invoiceElement.realDatePaid}"/>
                     <h:outputText value="Not Paid" 
-                                  rendered="#{(invoiceElement.amountPaid == 0)
-                                              or (invoiceElement.balance == 0)}"/>
+                                  rendered="#{invoiceElement.amountPaid == 0}"/>
                 </h:column>
 
                 <h:column>

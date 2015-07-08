@@ -17,9 +17,7 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import ncgms.controllers.LogInLogOutController;
 import ncgms.entities.Invoice;
-import ncgms.entities.User;
 import ncgms.daos.InvoicesFacade;
-import ncgms.daos.UsersFacade;
 import ncgms.entities.Client;
 
 /**
@@ -30,9 +28,9 @@ import ncgms.entities.Client;
 @SessionScoped
 public class ClientInvoiceController implements Serializable {
 
+    private String searchTerm;
     private List<Invoice> invoiceList = new ArrayList<>();
     private List<Invoice> viewableInvoiceList = new ArrayList<>();
-    private boolean noInvoicesRendered = false;
 
     /* For navigation */
     private int noOfPages = 0;
@@ -173,6 +171,49 @@ public class ClientInvoiceController implements Serializable {
 
     }
 
+    public void searchInvoices(int clientID) {
+        try {
+            InvoicesFacade invoicesFacade = new InvoicesFacade();
+            this.invoiceList = invoicesFacade.searchInvoiceByInvoiceNumber(searchTerm, clientID);
+        } catch (SQLException ex) {
+            Logger.getLogger(ClientInvoiceController.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (this.invoiceList.isEmpty()) {
+                this.initializeInvoiceList();
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "No Results",
+                        "No Results");
+                FacesContext.getCurrentInstance().addMessage("invoices_form:search_button",
+                        facesMessage);
+            } else {
+                this.searchTerm = null;
+                initializeResultList();
+            }
+        }
+    }
+
+    private void initializeResultList() {
+        currentInvoiceIndex = 0;
+        currentPage = 1;
+        this.noOfPages = this.invoiceList.size() / 10;
+        if (this.invoiceList.size() % 10 > 0) {
+            this.noOfPages = this.noOfPages + 1;
+        }
+        this.viewableInvoiceList = new ArrayList<>();
+        int index;
+        if (this.invoiceList.size() >= 10) {// if there are more than 10 invoices
+
+            // Set the first 10 invoices
+            for (index = 0; index <= 9; index++) {
+                this.viewableInvoiceList.add(this.invoiceList.get(index));
+            }
+            currentInvoiceIndex = index;
+        } else {
+            this.viewableInvoiceList = this.invoiceList;
+            currentInvoiceIndex = this.viewableInvoiceList.size();
+        }
+    }
+
     public void refreshInvoices() {
         this.initializeInvoiceList();;
     }
@@ -191,14 +232,6 @@ public class ClientInvoiceController implements Serializable {
 
     public void setViewableInvoiceList(List<Invoice> viewableInvoiceList) {
         this.viewableInvoiceList = viewableInvoiceList;
-    }
-
-    public boolean isNoInvoicesRendered() {
-        return invoiceList.isEmpty();
-    }
-
-    public void setNoInvoicesRendered(boolean noInvoicesRendered) {
-        this.noInvoicesRendered = noInvoicesRendered;
     }
 
     public int getNoOfPages() {
@@ -239,6 +272,14 @@ public class ClientInvoiceController implements Serializable {
 
     public void setPreviousRendered(boolean previousRendered) {
         this.previousRendered = previousRendered;
+    }
+
+    public String getSearchTerm() {
+        return searchTerm;
+    }
+
+    public void setSearchTerm(String searchTerm) {
+        this.searchTerm = searchTerm;
     }
 
 }

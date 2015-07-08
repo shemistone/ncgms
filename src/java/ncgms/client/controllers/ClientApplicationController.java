@@ -29,9 +29,11 @@ import ncgms.entities.User;
 import ncgms.entities.Package;
 import ncgms.util.PasswordHasher;
 import ncgms.daos.ClientsFacade;
+import ncgms.daos.MessagesFacade;
 import ncgms.daos.PackagesFacade;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.UsersFacade;
+import ncgms.entities.Message;
 import ncgms.entities.Subcounty;
 import ncgms.entities.Truck;
 import ncgms.util.SMSSender;
@@ -159,32 +161,31 @@ public class ClientApplicationController implements Serializable {
     /**
      * Insert user information into the database
      */
-    public void insertClientAndUser() {
+    public void insertClient() {
 
         try {
-
             // Check if username already exists
             UsersFacade usersFacade = new UsersFacade();
             User user = (User) usersFacade.searchUserByUsername(username);
             //Check if user exists
             if (user.getUserID() > 0) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                FacesMessage facesMessage = new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
                         username + " is already taken, try another username.",
                         username + " is already taken, try another username.");
-                FacesContext.getCurrentInstance().addMessage("client_application_form:username",
+                FacesContext.getCurrentInstance().addMessage(
+                        "client_application_form:username",
                         facesMessage);
                 return;
             }
-            // Create a new user
-            user = new User(username, hashPassword(), 0);
-            usersFacade.setUser(user);
-            Client client = new Client(user.getUserID(), username, user.getPasswordHash(),
+            // Create a new client           
+            Client client = new Client(user.getUserID(), username, hashPassword(),
                     0, firstName, lastName, address, phone, email, plotName,
                     new Date().getTime(), Integer.valueOf(idNumber), 0,
                     new Subcounty(new SubcountiesFacade().searchSubCountyByName(subcounty).
                             getSubcountyID(), subcounty), new Truck("None", 0, 0, null),
                     new Package(packageName, 0));
-
+            usersFacade.setUser(client);
             ClientsFacade clientsFacade = new ClientsFacade(client);
 
             //Check whether client already exists
@@ -202,18 +203,33 @@ public class ClientApplicationController implements Serializable {
                     // Now add client to database
                     int clientResult = clientsFacade.insertClient();
                     if (clientResult == 1) {
-                        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        FacesMessage facesMessage = new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
                                 "Your application has been successfully received. "
-                                + " You will be able to log in once your application has been approved.",
+                                + " You will be able to log in once your "
+                                + "application has been approved.",
                                 "Your application has been successfully received. "
-                                + " You will be able to log in once your application has been approved.");
-                        FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-                        this.address = this.email = this.firstName = this.idNumber = this.lastName
-                                = this.password = this.passwordAgain = this.phone = this.plotName
-                                = this.subcounty = this.username = null;
+                                + " You will be able to log in once your "
+                                + "application has been approved.");
+                        FacesContext.getCurrentInstance().addMessage(null,
+                                facesMessage);
+                        this.address = this.email = this.firstName = this.idNumber
+                                = this.lastName = this.password = this.passwordAgain
+                                = this.phone = this.plotName = this.subcounty
+                                = this.username = null;
                         // Notify admin
-                        SMSSender.sendSmsSynchronous("0721868821", "Hello admin, you have a new driver"
-                                + " client application. NCGMS Inc.");
+                        String mobileMessage = "Hello admin, you have a new"
+                                + " client application. NCGMS Inc.";
+                        SMSSender.sendSmsSynchronous("0721868821",
+                                mobileMessage);
+                        String systemMessage = "Hello admin, you have a new"
+                                + " client application. NCGMS Inc.";
+                        User admin = new User(new UsersFacade().loadAdminUserID(),
+                                "admin", null, 1);
+                        Message message = new Message(systemMessage, new Date().getTime(),
+                                0, admin);
+                        MessagesFacade messagesFacade = new MessagesFacade(message);
+                        messagesFacade.insertMessage();
                     } else {
                         // Pass
                     }
@@ -223,7 +239,8 @@ public class ClientApplicationController implements Serializable {
                 }
 
             } else {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                FacesMessage facesMessage = new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
                         "Application failed - You have already applied",
                         "Application failed - You have already applied");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
@@ -232,9 +249,11 @@ public class ClientApplicationController implements Serializable {
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Could not process application.", "Could not process application.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-            Logger.getLogger(ClientApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientApplicationController.class.getName()).
+                    log(Level.SEVERE, null, ex);
         } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(ClientApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientApplicationController.class.getName()).
+                    log(Level.SEVERE, null, ex);
         }
     }
 

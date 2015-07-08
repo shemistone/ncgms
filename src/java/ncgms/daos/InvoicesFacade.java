@@ -317,4 +317,32 @@ public class InvoicesFacade extends AbstractFacade {
         disconnect();
         return balance;
     }
+
+    public List<Invoice> searchInvoiceByInvoiceNumber(
+            String searchTerm, int clientID) throws SQLException {
+        connect();
+        ArrayList<Invoice> invoiceList = new ArrayList<>();
+        Statement statement = connection.createStatement();
+        String query = "SELECT `Invoices`.*, `Clients`.* FROM `Invoices`"
+                + " INNER JOIN `Clients` ON `Invoices`.`clientID` = `Clients`.`clientID`"
+                + " WHERE `Invoices`.`invoiceID` = \"" + searchTerm + "\" AND"
+                + " `Invoices`.`clientID` = \"" + clientID + "\""
+                + " ORDER BY `Invoices`.`invoiceID` DESC";
+        ResultSet resultSet = statement.executeQuery(query);
+        while (resultSet.next()) {
+            this.invoice = new Invoice(resultSet.getInt("invoiceID"),
+                    resultSet.getLong("dateAdded"), resultSet.getLong("dateDue"),
+                    resultSet.getLong("datePaid"), resultSet.getDouble("amountDue"),
+                    resultSet.getDouble("amountPaid"), resultSet.getDouble("balance"),
+                    resultSet.getInt("isPaid"), null);
+            // Get this invoices client
+            ClientsFacade clientsFacade = new ClientsFacade();
+            this.invoice.setClient(clientsFacade.searchClientByClientID(
+                    resultSet.getInt("clientID")));
+            // Add invoice to invoicelIST
+            invoiceList.add(this.invoice);
+        }
+        disconnect();
+        return invoiceList;
+    }
 }

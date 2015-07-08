@@ -20,13 +20,27 @@
     </ui:define>
     <ui:define name="content">  
         <!--Recent invoices form-->
-        <h:form>
+        <h:form id="invoices_form">
             <h1>Recent Invoices</h1>
             <h:outputText value="You have no Invoices" 
                           rendered="#{clientInvoiceController.invoiceList.size() == 0}"/><br />
-
+            
+            <h:outputLabel for="search" value="Enter Invoice ID: " 
+                           rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+            <h:inputText id="search" value="#{clientInvoiceController.searchTerm}" 
+                         rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+            <h:commandLink action="#{clientInvoiceController.
+                                     searchInvoices(logInLogOutController.client.clientID)}" 
+                           id="search_button" 
+                           rendered="#{clientInvoiceController.invoiceList.size() != 0}">
+                <h:graphicImage library="icons" name="search.png" style="margin: 0 2px -2px 0"/>Search
+                <f:ajax event="action" execute="@form" render="@all"/>
+            </h:commandLink>
+            <h:message for="search_button" errorClass="error" infoClass="info"/><br />
+            
             <h:outputText class="pages" 
-                          value="Page #{clientInvoiceController.currentPage} of #{clientInvoiceController.noOfPages}"
+                          value="Page #{clientInvoiceController.currentPage} 
+                          of #{clientInvoiceController.noOfPages}"
                           rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
 
             <h:commandLink action="#{clientInvoiceController.previousInvoicePage}" 
@@ -54,10 +68,10 @@
                         <h:outputText value="Status" 
                                       rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
                     </f:facet>
-                    <h:outputText value="Paid" 
-                                  rendered="#{invoiceElement.balance le invoiceElement.amountDue}"/>
-                    <h:outputText value="Not Paid" 
-                                  rendered="#{invoiceElement.balance gt invoiceElement.amountDue}"/>
+                    <h:outputText value="Cleared" 
+                                  rendered="#{invoiceElement.balance le 0}"/>
+                    <h:outputText value="Not Cleared" 
+                                  rendered="#{invoiceElement.balance gt 0}"/>
                 </h:column> 
 
                 <h:column>
@@ -91,7 +105,7 @@
                     </f:facet>
                     <h:outputText value="#{invoiceElement.realDatePaid}"/>    
                     <h:outputText value="Not Paid" 
-                                  rendered="#{invoiceElement.balance gt invoiceElement.amountDue}"/>
+                                  rendered="#{invoiceElement.amountPaid == 0}"/>
                 </h:column>
 
                 <h:column>
