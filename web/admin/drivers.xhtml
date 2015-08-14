@@ -26,12 +26,16 @@
             <h:outputText value="You have no Drivers" 
                           rendered="#{adminDriverController.driverList.size() == 0}"/><br />
 
-            <h:outputLabel for="search" value="Search by:" rendered="#{adminDriverController.driverList.size() != 0}"/>
-            <h:selectOneMenu id="search" value="#{adminDriverController.searchBy}" rendered="#{adminDriverController.driverList.size() != 0}">
+            <h:outputLabel for="search" value="Search by:" 
+                           rendered="#{adminDriverController.driverList.size() != 0}"/>
+            <h:selectOneMenu id="search" value="#{adminDriverController.searchBy}" 
+                             rendered="#{adminDriverController.driverList.size() != 0}">
                 <f:selectItems value="#{adminDriverController.searchByArray}"/>
             </h:selectOneMenu>
-            <h:inputText value="#{adminDriverController.searchTerm}" rendered="#{adminDriverController.driverList.size() != 0}"/>
-            <h:commandLink action="#{adminDriverController.searchDrivers}" id="search_button" rendered="#{adminDriverController.driverList.size() != 0}">
+            <h:inputText value="#{adminDriverController.searchTerm}" 
+                         rendered="#{adminDriverController.driverList.size() != 0}"/>
+            <h:commandLink action="#{adminDriverController.searchDrivers}" id="search_button" 
+                           rendered="#{adminDriverController.driverList.size() != 0}">
                 <h:graphicImage library="icons" name="search.png" style="margin: 0 2px -2px 0"/>Search
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
@@ -39,12 +43,14 @@
             
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>            
             
-            <h:outputText class="pages" value="Page #{adminDriverController.currentPage} of #{adminDriverController.noOfPages}"
+            <h:outputText class="pages" value="Page #{adminDriverController.currentPage} 
+                          of #{adminDriverController.noOfPages}"
                           rendered="#{adminDriverController.driverList.size() != 0}"/>
 
             <h:commandLink action="#{adminDriverController.previousDriverPage}" 
                            rendered="#{adminDriverController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:commandLink action="#{adminDriverController.nextDriverPage}" 
@@ -70,21 +76,24 @@
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Date Added" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                        <h:outputText value="Date Added" 
+                                      rendered="#{adminDriverController.driverList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="#{driverElement.realDateAdded}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Driver Name" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                        <h:outputText value="Driver Name" 
+                                      rendered="#{adminDriverController.driverList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="#{driverElement.firstName} #{driverElement.lastName}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Subcounty" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                        <h:outputText value="Subcounty" 
+                                      rendered="#{adminDriverController.driverList.size() != 0}"/>
                     </f:facet>
-                    <h:outputText value="#{adminDriverController.subcountyNamesMap.get(driverElement.subcounty.subcountyID)}"/>
+                    <h:outputText value="#{driverElement.subcounty.subcountyName}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
@@ -143,6 +152,11 @@
                     <h:commandLink action="#{adminDriverController.rejectApplication(driverElement)}" 
                                    rendered="#{driverElement.isActive != 1}">
                         <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>Reject
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                    <h:commandLink action="#{adminDriverController.removeDriver(driverElement)}" 
+                                   rendered="#{driverElement.isActive == 1}">
+                        <h:graphicImage library="icons" name="trash.png" style="margin: 0 2px -2px 0"/>Delete
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>
                 </h:column>

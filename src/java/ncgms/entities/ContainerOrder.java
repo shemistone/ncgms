@@ -20,7 +20,7 @@ public class ContainerOrder {
     private long dateAdded = 0;
     private String realDateAdded = null;
     private double totalPrice = 0.0;
-    private int isApproved = 0;
+    private String status = "Procesing";
     // Relationships
     Client client = null;
     private List<OrderDetail> orderDetailList = new ArrayList<>(); 
@@ -32,21 +32,21 @@ public class ContainerOrder {
     }
 
     public ContainerOrder(int orderID, long dateAdded, double totalPrice,
-            int isApproved, Client client, List<OrderDetail> orderDetailList) {
+            String status, Client client, List<OrderDetail> orderDetailList) {
         this.orderID = orderID;
         this.dateAdded = dateAdded;
         this.totalPrice = totalPrice;
-        this.isApproved = isApproved;
+        this.status = status;
         this.client = client;
         this.orderDetailList = orderDetailList;
     }
     
     public ContainerOrder(int orderID, long dateAdded, double totalPrice,
-            int isApproved) {
+            String status) {
         this.orderID = orderID;
         this.dateAdded = dateAdded;
         this.totalPrice = totalPrice;
-        this.isApproved = isApproved;
+        this.status = status;
     }
     
     
@@ -95,14 +95,6 @@ public class ContainerOrder {
         this.totalPrice = totalPrice;
     }
 
-    public int getIsApproved() {
-        return isApproved;
-    }
-
-    public void setIsApproved(int isApproved) {
-        this.isApproved = isApproved;
-    }
-
     public Client getClient() {
         return client;
     }
@@ -111,11 +103,19 @@ public class ContainerOrder {
         this.client = client;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "\nOrder ID - " + orderID
                 + "\nDate Added - " + new Date(dateAdded).toString()
                 + "\nTotal Price - " + totalPrice
-                + "\nIs Approved - " + isApproved;
+                + "\nStatus - " + status;
     }
 }

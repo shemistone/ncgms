@@ -8,7 +8,10 @@ package ncgms.admin.controllers;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -18,6 +21,11 @@ import javax.faces.context.FacesContext;
 import ncgms.controllers.MessageController;
 import ncgms.entities.ContainerOrder;
 import ncgms.daos.ContainerOrdersFacade;
+import ncgms.daos.MessagesFacade;
+import ncgms.entities.Message;
+import ncgms.entities.User;
+import ncgms.util.EmailSenderTask;
+import ncgms.util.SMSSenderTask;
 
 /**
  *
@@ -26,6 +34,8 @@ import ncgms.daos.ContainerOrdersFacade;
 @ManagedBean
 @SessionScoped
 public class AdminContainerOrderController implements Serializable {
+
+    private ExecutorService executorService;
 
     private String searchBy = null;
     private String searchTerm = null;
@@ -195,57 +205,132 @@ public class AdminContainerOrderController implements Serializable {
 
     public void approveContainerOrder(ContainerOrder containerOrder) {
         try {
+            this.executorService = Executors.newCachedThreadPool();
             // Create a new ContainerOrdersFacade
             ContainerOrdersFacade containerOrdersFacade = new ContainerOrdersFacade(containerOrder);
             int result = containerOrdersFacade.approveContainerOrder();
             if (result == 1) {
                 // Set the order as approved
-                containerOrder.setIsApproved(1);
+                containerOrder.setStatus("Approved");
+                // Notify client----------------------------------------------//
+                String message = "Hello "
+                        + containerOrder.getClient().getFirstName() + " "
+                        + containerOrder.getClient().getLastName()
+                        + ". Your order with Order ID: " + containerOrder.getOrderID()
+                        + " has been approved. The items will be delivered during the next "
+                        + " garbage pick up. Thank you. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(containerOrder.getClient().getPhone(),
+                        message));
+                this.executorService.execute(new EmailSenderTask(containerOrder.getClient().getEmail(),
+                        "Order Approval", message));
+                Message newMessage = new Message(message, new Date().getTime(), 
+                       0, new User(containerOrder.getClient().getClientID(), null, null, 1));
+                MessagesFacade messagesFacade = new MessagesFacade(newMessage);
+                messagesFacade.insertMessage();
+                //--------------------------------------------------------------//
             } else {
                 // Pass
             }
         } catch (SQLException ex) {
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                    "Could not approve order. Please contact the system administrator.", 
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Could not approve order. Please contact the system administrator.",
                     "Could not approve order. Please contact the system administrator.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminContainerOrderController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    
-    public void removeContainerOrder(ContainerOrder containerOrder){
+    public void cancelContainerOrder(ContainerOrder containerOrder) {
         try {
+            this.executorService = Executors.newCachedThreadPool();
             ContainerOrdersFacade containerOrderFacade = new ContainerOrdersFacade(containerOrder);
-            int result = containerOrderFacade.removeContainerOrder();
-            if(result == 1){
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                    "Order successfully removed.", 
-                    "Order successfully removed.");
-            FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-            }else{
+            int result = containerOrderFacade.cancelContainerOrder();
+            if (result == 1) {
+                containerOrder.setStatus("Canceled");
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Order successfully canceled.",
+                        "Order successfully canceled.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+                // Notify client----------------------------------------------//
+                String message = "Hello "
+                        + containerOrder.getClient().getFirstName() + " "
+                        + containerOrder.getClient().getLastName()
+                        + ". Your order with Order ID: " + containerOrder.getOrderID()
+                        + ") has been canceled, Please contact us for any further follow up."
+                        + " Thank you. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(containerOrder.getClient().getPhone(),
+                        message));
+
+                this.executorService.execute(new EmailSenderTask(containerOrder.getClient().getEmail(),
+                        "Client Application", message));
+                Message newMessage = new Message(message, new Date().getTime(), 
+                       0, new User(containerOrder.getClient().getClientID(), null, null, 1));
+                MessagesFacade messagesFacade = new MessagesFacade(newMessage);
+                messagesFacade.insertMessage();
+                //--------------------------------------------------------------//
+                
+            } else {
                 //
             }
         } catch (SQLException ex) {
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                    "Could not approve order. Please contact the system administrator.", 
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Could not cancel order. Please contact the system administrator.",
+                    "Could not cancel order. Please contact the system administrator.");
+            FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+            Logger.getLogger(AdminContainerOrderController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+    
+    public void clearContainerOrder(ContainerOrder containerOrder) {
+        try {
+            ContainerOrdersFacade containerOrderFacade = new ContainerOrdersFacade(containerOrder);
+            containerOrderFacade.clearContainerOrder();
+            containerOrder.setStatus("Delivered");
+        } catch (SQLException ex) {
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Could not clear order. Please contact the system administrator.",
+                    "Could not clear order. Please contact the system administrator.");
+            FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+            Logger.getLogger(AdminContainerOrderController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+    
+    
+
+    public void removeContainerOrder(ContainerOrder containerOrder) {
+        try {
+            ContainerOrdersFacade containerOrderFacade = new ContainerOrdersFacade(containerOrder);
+            int result = containerOrderFacade.removeContainerOrder();
+            if (result == 1) {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Order successfully trashed.",
+                        "Order successfully trashed.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+            } else {
+                //
+            }
+        } catch (SQLException ex) {
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Could not approve order. Please contact the system administrator.",
                     "Could not approve order. Please contact the system administrator.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminContainerOrderController.class.getName()).log(Level.SEVERE, null, ex);
-        }finally {
+        } finally {
             // Get current page
             int page = this.currentPage;
             // Initialize container order list
             this.initializeContainerOrderList();
             // Go back to current page
-            for(int i = 1; i < page; i++){
+            for (int i = 1; i < page; i++) {
                 nextContainerOrderPage();
             }
 
         }
-        
+
     }
-    
+
     public void refreshContainerOrders() {
         this.initializeContainerOrderList();
     }
@@ -279,7 +364,7 @@ public class AdminContainerOrderController implements Serializable {
             if (this.containerOrderList.isEmpty()) {
                 this.initializeContainerOrderList();
                 FacesMessage facesMessage = new FacesMessage(
-                        FacesMessage.SEVERITY_ERROR, 
+                        FacesMessage.SEVERITY_ERROR,
                         "No Results",
                         "No Results");
                 FacesContext.getCurrentInstance().addMessage(

@@ -25,12 +25,14 @@
             <h1>Recent Complaints/Enquiries</h1>
             <h:outputText value="There are no Complaints" 
                           rendered="#{adminComplaintController.complaintList.size() == 0}"/><br />
-            <h:outputText class="pages" value="Page #{adminComplaintController.currentPage} of #{adminComplaintController.noOfPages}"
+            <h:outputText class="pages" value="Page #{adminComplaintController.currentPage} 
+                          of #{adminComplaintController.noOfPages}"
                           rendered="#{adminComplaintController.complaintList.size() != 0}"/>
 
             <h:commandLink action="#{adminComplaintController.previousComplaintPage}" 
                            rendered="#{adminComplaintController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:commandLink action="#{adminComplaintController.nextComplaintPage}" 
@@ -40,19 +42,21 @@
             </h:commandLink>
             <h:commandLink action="#{adminComplaintController.refreshComplaints}" 
                            rendered="#{adminComplaintController.complaintList.size() != 0}">
-                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+                <h:graphicImage library="icons" name="refresh.png" 
+                                style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
 
             <h:dataTable value="#{adminComplaintController.viewableComplaintList}" 
                          rendered="#{adminComplaintController.complaintList.size() != 0}"
-                         var="complaintElement">
+                         var="complaintElement" style="border:none">
                 <h:column>
                     <h:form>
                         <h:outputText value="#{complaintElement.user.username} #{complaintElement.realDateAdded}"/><br />
                         <h:outputText value="#{complaintElement.complaint}"/>
                         <h:dataTable value="#{complaintElement.responseList}" var="responseElement"
-                                     rendered="#{complaintElement.responseList.size() != 0}">
+                                     rendered="#{complaintElement.responseList.size() != 0}"
+                                      styleClass="inner_table">
                             <h:column>
                                 <h:outputText value="----#{responseElement.realDateAdded} #{responseElement.response}"/> 
                             </h:column>

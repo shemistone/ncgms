@@ -66,7 +66,8 @@ public class ClientIndexController implements Serializable {
                 client = clientsFacade.searchClientByClientID(user.getUserID());
                 Message message = new Message(0, client.getPlotName()
                         + " wants to cancel garbage collection services",
-                        new Date().getTime(), 0, new User(0, null, null, usersFacade.loadAdminUserID()));
+                        new Date().getTime(), 0, new User(usersFacade.loadAdminUserID(), 
+                                null, null, 0));
                 MessagesFacade messagesFacade = new MessagesFacade(message);
                 messagesFacade.insertMessage();
                 // Log user out

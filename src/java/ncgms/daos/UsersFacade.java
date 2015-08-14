@@ -8,7 +8,6 @@ package ncgms.daos;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import ncgms.entities.User;
 
 /**
@@ -25,6 +24,26 @@ public class UsersFacade extends AbstractFacade {
 
     public UsersFacade(User user) {
         this.user = user;
+    }
+
+    public int activateUser() throws SQLException {
+        connect();
+        Statement statement = connection.createStatement();
+        String query = "UPDATE `Users` SET `isActive` = \"" + 1
+                + "\" WHERE `username` = \"" + user.getUsername() + "\"";
+        int result = statement.executeUpdate(query);
+        disconnect();
+        return result;
+    }
+    
+    public int deactivateUser() throws SQLException {
+        connect();
+        Statement statement = connection.createStatement();
+        String query = "UPDATE `Users` SET `isActive` = \"" + 0
+                + "\" WHERE `username` = \"" + user.getUsername() + "\"";
+        int result = statement.executeUpdate(query);
+        disconnect();
+        return result;
     }
 
     public String loadUserCategory() throws SQLException {
@@ -83,14 +102,24 @@ public class UsersFacade extends AbstractFacade {
         disconnect();
         return result;
     }
+    
+    public int resetPassword() throws SQLException {
+        connect();
+        Statement statement = connection.createStatement();
+        String query = "UPDATE `Users` SET `passwordHash` = \""
+                + this.user.getPasswordHash() + "\""
+                + " WHERE `username` = \"" + user.getUsername() + "\"";
+        int result = statement.executeUpdate(query);
+        disconnect();
+        return result;
+    }
 
     public boolean isActive() throws SQLException {
         connect();
         int isActive = 0;
         Statement statement = connection.createStatement();
         String query = "SELECT `isActive` FROM `Users` WHERE `username` = '"
-                + user.getUsername() + "' AND `passwordHash` = '"
-                + user.getPasswordHash() + "'";
+                + user.getUsername() + "'";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             isActive = resultSet.getInt("isActive");
@@ -163,7 +192,6 @@ public class UsersFacade extends AbstractFacade {
 
     public User searchUserByUsername(String searchTerm) throws SQLException {
         connect();
-        ArrayList<User> userList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Users` WHERE `username` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);

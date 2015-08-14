@@ -152,9 +152,9 @@
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink><br />
                     <h:commandLink action="#{adminClientController.removeClient(clientElement)}" 
-                                   rendered="#{clientElement.wantsToCancel == 1}">
-                        <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>
-                        Remove
+                                   rendered="#{clientElement.isActive == 1}">
+                        <h:graphicImage library="icons" name="trash.png" style="margin: 0 2px -2px 0"/>
+                        Delete
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>
                 </h:column>

@@ -41,8 +41,8 @@ public class AdminContainerController implements Serializable {
 
     private List<Container> containerList = new ArrayList<>();
 
-    @Pattern(regexp = "^[A-Za-z0-9]+[A-Za-z0-9\\s]*[A-a-z0-9]*$",
-            message = "Name format is invalid.")
+    @Pattern(regexp = "^[A-Z]{1}(([A-Za-z0-9]\\s*)|([A-Za-z0-9]\\-?[A-Za-z0-9])|([A-Za-z0-9]\\'?))+$",
+            message = "Description format is invalid.")
     private String name;
     @Pattern(regexp = "^[0-9]+$",
             message = "Quantity format is invalid.")

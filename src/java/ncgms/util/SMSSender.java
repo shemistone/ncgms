@@ -20,7 +20,7 @@ public class SMSSender {
         Process gsmsendsmsProcess;
         gsmsendsmsProcess = processBuilder.start();
         gsmsendsmsProcess.waitFor();
-
+        
         return gsmsendsmsProcess.exitValue() == 0;
     }
 

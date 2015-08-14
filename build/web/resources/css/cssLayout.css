@@ -13,7 +13,9 @@
     width: 175px;
     overflow: hidden;
 }
-
+#left #application_form a{
+    margin: 0.2em 2em;
+}
 #content {
     background-color: #fff;
     padding: 0.4em;
@@ -23,44 +25,9 @@
     overflow: hidden;
     border: solid #ddd 0.2em;
     border-radius: 0.8em;
-    box-shadow: 0.4em 0.4em 0.6em #555;
 }
-
-#img{
-    margin: 0;
-}
-
-#slider{
-    position: relative;
-    padding: 0;
-    margin: 0.6em auto;
-    width: 95%;
-    height: 200px;
-}
-
-#previous{
-    position: absolute;
-    top: 0;
-    left: 0;
-    color: white;
-    float: left;
-    width: 6em;
-    height: 200px;
-}
-
-#next{
-    position: absolute;
-    top: 0;
-    right: 0;
-    color: white;
-    float: right;
-    width: 6em;
-    height: 200px;
-}
-
-
-#previous img, #next img{
-    margin-top: 100%;
+#images{
+    margin: 0.2em;
 }
 
 #bottom {

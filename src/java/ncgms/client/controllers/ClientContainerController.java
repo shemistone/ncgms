@@ -5,12 +5,13 @@
  */
 package ncgms.client.controllers;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -27,8 +28,9 @@ import ncgms.entities.User;
 import ncgms.daos.ClientsFacade;
 import ncgms.daos.ContainerOrdersFacade;
 import ncgms.daos.ContainersFacade;
+import ncgms.daos.LogisticsManagersFacade;
 import ncgms.daos.UsersFacade;
-import ncgms.util.SMSSender;
+import ncgms.util.SMSSenderTask;
 
 /**
  *
@@ -38,9 +40,10 @@ import ncgms.util.SMSSender;
 @SessionScoped
 public class ClientContainerController implements Serializable {
 
+    ExecutorService executorService;
+    
     private List<Container> containerList = new ArrayList<>();
     private List<OrderDetail> orderDetailList = new ArrayList<>();
-    private boolean noContainersRendered = false;
 
     private double price;
     private boolean cartRendered = false;
@@ -139,22 +142,25 @@ public class ClientContainerController implements Serializable {
 
             // Create a new container order
             ContainerOrder containerOrder = new ContainerOrder(0, new Date().getTime(),
-                    totalPrice, 0, client, orderDetailList);
+                    totalPrice, "Processing", client, orderDetailList);
             ContainerOrdersFacade containersOrdersFacade = new ContainerOrdersFacade(containerOrder);
 
             int containerOrderResult = containersOrdersFacade.insertContainerOrder();
             if (containerOrderResult == 1) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
-                        "Your order has been received. The containers will be delivered during the "
-                        + " next collection schedule. The amount due will be added to your monthly bill.",
-                        "Your order has been received. The containers will be delivered during the "
-                        + " next collection schedule. The amount due will be added to your monthly bill.");
+                        "Your order has been received. You will be notified about your items delivery.",
+                        "Your order has been received. You will be notified about your items delivery.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                 noOfContainers = 0;
                 orderDetailList.clear();
-                SMSSender.sendSmsSynchronous("072186821", "You have received a new order from "
+                // Notify the admin------------------------------------------------------//
+                String message = "Hello admin, you have received a new order from "
                         + new ClientsFacade().searchClientByClientID(containerOrder.getClient().getUserID())
-                        + " NCGMS Inc.");
+                        + " NCGMS Inc.";
+                this.executorService = Executors.newCachedThreadPool();
+                this.executorService.execute(new SMSSenderTask(new LogisticsManagersFacade().
+                        searchLogisticsManagerByUsername("admin").getPhoneNo(), message));
+                //-----------------------------------------------------------------------//
             } else {
                 // Pass
             }
@@ -164,10 +170,9 @@ public class ClientContainerController implements Serializable {
                     "Could not insert container order.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(ClientContainerController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(ClientContainerController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             setTotalPrice(0.0);
+            this.executorService.shutdown();
         }
 
     }
@@ -207,14 +212,6 @@ public class ClientContainerController implements Serializable {
 
     public void setOrderDetailList(List<OrderDetail> orderDetailList) {
         this.orderDetailList = orderDetailList;
-    }
-
-    public boolean isNoContainersRendered() {
-        return this.containerList.isEmpty();
-    }
-
-    public void setNoContainersRendered(boolean noContainersRendered) {
-        this.noContainersRendered = noContainersRendered;
     }
 
     public int getNoOfContainers() {

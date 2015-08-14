@@ -40,7 +40,8 @@
             <h:messages globalOnly="true" errorClass="error" infoClass="info"
                         warnClass="warn"/>
 
-            <h:commandLink action="#{adminTruckController.insertTruck}" style="margin: 0.4em 0 0.4em 15%">
+            <h:commandLink action="#{adminTruckController.insertTruck}" 
+                           style="margin: 0.4em 0 0.4em 15%">
                 <h:graphicImage library="icons" name="add.png" style="margin: 0 2px -2px 0"/>Add Truck
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
@@ -50,40 +51,51 @@
         <h:form id="trucks_form">       
             <h1>Trucks</h1>
             <h:message for="trucks_form" errorClass="error" infoClass="info"  warnClass="warn"/><br />
-            <h:outputText value="You have no Trucks" rendered="#{adminTruckController.truckList.size() == 0}"/>   
+            <h:outputText value="You have no Trucks" 
+                          rendered="#{adminTruckController.truckList.size() == 0}"/>   
 
-            <h:outputLabel for="search" value="Search by:" rendered="#{adminTruckController.truckList.size() != 0}"/>
-            <h:selectOneMenu id="search" value="#{adminTruckController.searchBy}" rendered="#{adminTruckController.truckList.size() != 0}">
+            <h:outputLabel for="search" value="Search by:" 
+                           rendered="#{adminTruckController.truckList.size() != 0}"/>
+            <h:selectOneMenu id="search" value="#{adminTruckController.searchBy}" 
+                             rendered="#{adminTruckController.truckList.size() != 0}">
                 <f:selectItems value="#{adminTruckController.searchByArray}"/>
             </h:selectOneMenu>
-            <h:inputText value="#{adminTruckController.searchTerm}" rendered="#{adminTruckController.truckList.size() != 0}"/>
-            <h:commandLink action="#{adminTruckController.searchTrucks}" id="search_button" rendered="#{adminTruckController.truckList.size() != 0}">
+            <h:inputText value="#{adminTruckController.searchTerm}" 
+                         rendered="#{adminTruckController.truckList.size() != 0}"/>
+            <h:commandLink action="#{adminTruckController.searchTrucks}" id="search_button" 
+                           rendered="#{adminTruckController.truckList.size() != 0}">
                 <h:graphicImage library="icons" name="search.png" style="margin: 0 2px -2px 0"/>Search
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:message for="search_button" errorClass="error" infoClass="info"/><br />
             
-            <h:outputText class="pages"  value="Page #{adminTruckController.currentPage} of #{adminTruckController.noOfPages}"
+            <h:outputText class="pages"  value="Page #{adminTruckController.currentPage} 
+                          of #{adminTruckController.noOfPages}"
                           rendered="#{adminTruckController.truckList.size() != 0}"/>
-            <h:commandLink action="#{adminTruckController.previousTruckPage}" rendered="#{adminTruckController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+            <h:commandLink action="#{adminTruckController.previousTruckPage}" 
+                           rendered="#{adminTruckController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{adminTruckController.nextTruckPage}" rendered="#{adminTruckController.nextRendered}">
+            <h:commandLink action="#{adminTruckController.nextTruckPage}" 
+                           rendered="#{adminTruckController.nextRendered}">
                 Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{adminTruckController.refreshTrucks}" rendered="#{adminTruckController.truckList.size() != 0}">
+            <h:commandLink action="#{adminTruckController.refreshTrucks}" 
+                           rendered="#{adminTruckController.truckList.size() != 0}">
                 <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
 
             <h:dataTable value="#{adminTruckController.viewableTruckList}" styleClass="outer_table"
-                         var="truckElement"
+                         var="truckElement" 
                          rendered="#{adminTruckController.truckList.size() != 0}">
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Status" rendered="#{adminTruckController.truckList.size() != 0}"/>
+                        <h:outputText value="Status" 
+                                      rendered="#{adminTruckController.truckList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="Suspended" rendered="#{truckElement.inService != 1}"/>
                     <h:outputText value="In Service" rendered="#{truckElement.inService == 1}"/>
@@ -98,24 +110,27 @@
                     <f:facet name="header">
                         <h:outputText value="Model Name" rendered="#{adminTruckController.truckList.size() != 0}"/>
                     </f:facet>
-                    <h:outputText value="#{adminTruckController.modelNamesMap.get(truckElement.model.modelID)}"/>
+                    <h:outputText value="#{truckElement.model.modelName}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Number Plate" rendered="#{adminTruckController.truckList.size() != 0}"/>
+                        <h:outputText value="Number Plate" 
+                                      rendered="#{adminTruckController.truckList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="#{truckElement.plateNumber}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Driver" rendered="#{adminTruckController.truckList.size() != 0}"/>
+                        <h:outputText value="Driver" 
+                                      rendered="#{adminTruckController.truckList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="None" rendered="#{truckElement.driver.firstName == null}"/>
                     <h:outputText value="#{truckElement.driver.firstName} #{truckElement.driver.lastName}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header">
-                        <h:outputText value="Sanitation Workers" rendered="#{adminTruckController.truckList.size() != 0}"/>
+                        <h:outputText value="Sanitation Workers" 
+                                      rendered="#{adminTruckController.truckList.size() != 0}"/>
                     </f:facet>
                     <h:outputText value="None" rendered="#{truckElement.toutList.size() == 0}"/>
                     <h:dataTable value="#{truckElement.toutList}" var="toutElement"
@@ -131,7 +146,8 @@
                     </f:facet>
                     <h:outputText value="None" rendered="#{truckElement.clientList.size() == 0}"/>
                     <h:dataTable value="#{truckElement.clientList}" var="clientElement"
-                                 rendered="#{truckElement.clientList.size() != 0}">
+                                 rendered="#{truckElement.clientList.size() != 0}"
+                                  styleClass="inner_table">
                         <h:column>
                             <h:outputText value="#{clientElement.plotName}"/>
                         </h:column>
@@ -149,8 +165,8 @@
                 </h:column> 
                 <h:column>
                     <h:commandLink action="#{adminTruckController.removeTruck(truckElement)}">
-                        <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>
-                        Remove
+                        <h:graphicImage library="icons" name="trash.png" style="margin: 0 2px -2px 0"/>
+                        Delete
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>
                 </h:column> 

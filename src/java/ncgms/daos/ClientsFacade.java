@@ -133,7 +133,8 @@ public class ClientsFacade extends AbstractFacade {
                     resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
                     resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
             //Set client
-            this.client.setTruck(new Truck(resultSet.getString("plateNumber"), resultSet.getInt("inService"),
+            this.client.setTruck(new Truck(resultSet.getString("plateNumber"), 
+                    resultSet.getInt("inService"),
                     resultSet.getLong("dateAdded"),
                     new Model(resultSet.getInt("modelID"), null)));
             //Set the plateNumber
@@ -456,7 +457,7 @@ public class ClientsFacade extends AbstractFacade {
                     resultSet.getString("phone"), resultSet.getString("email"),
                     resultSet.getString("plotName"), resultSet.getLong("dateAdded"),
                     resultSet.getInt("idNumber"), resultSet.getInt("wantsToCancel"));
-            //Set client
+            //Set truck
             this.client.setTruck(new Truck(resultSet.getString("plateNumber"),
                     resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
                     new Model(resultSet.getInt("modelID"), null)));

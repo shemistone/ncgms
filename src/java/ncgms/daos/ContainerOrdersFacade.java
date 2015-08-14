@@ -38,7 +38,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.*, "
                 + " `ContainerOrders`.`dateAdded`, `ContainerOrders`.`totalPrice`,"
-                + " `ContainerOrders`.`isApproved`, `ContainerOrders`.`clientID` FROM "
+                + " `ContainerOrders`.`status`, `ContainerOrders`.`clientID` FROM "
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `ContainerOrders` ON `Clients`.`clientID` = "
                 + "`ContainerOrders`.`clientID` WHERE `Users`.`isActive` = \"" + 1 + "\""
@@ -57,7 +57,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), client, null);
+                    resultSet.getString("status"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 
@@ -80,7 +80,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.`orderID`, "
                 + "`ContainerOrders`.`dateAdded`, `ContainerOrders`.`totalPrice`,"
-                + " `ContainerOrders`.`isApproved`, `ContainerOrders`.`clientID` FROM "
+                + " `ContainerOrders`.`status`, `ContainerOrders`.`clientID` FROM "
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `ContainerOrders` ON `Clients`.`clientID` = "
                 + "`ContainerOrders`.`clientID` WHERE `Users`.`isActive` = \"" + 1
@@ -99,7 +99,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), client, null);
+                    resultSet.getString("status"), client, null);
             clientContainerOrderList.add(this.containerOrder);
         }
 
@@ -119,8 +119,8 @@ public class ContainerOrdersFacade extends AbstractFacade {
     public int approveContainerOrder() throws SQLException {
         connect();
         Statement statement = connection.createStatement();
-        String query = "UPDATE `ContainerOrders` SET `isApproved` = \"" + 1
-                + "\" WHERE `ContainerOrders`.`orderID` = \""
+        String query = "UPDATE `ContainerOrders` SET `status` = \"Approved\""
+                + " WHERE `ContainerOrders`.`orderID` = \""
                 + containerOrder.getOrderID() + "\"";
         int result = statement.executeUpdate(query);
         if (result == 1) {
@@ -139,6 +139,40 @@ public class ContainerOrdersFacade extends AbstractFacade {
         return result;
     }
 
+    public int cancelContainerOrder() throws SQLException {
+        connect();
+        Statement statement = connection.createStatement();
+        String query = "UPDATE `ContainerOrders` SET `status` = \"Canceled\""
+                + " WHERE `ContainerOrders`.`orderID` = \""
+                + containerOrder.getOrderID() + "\"";
+        int result = statement.executeUpdate(query);
+        if (result == 1) {
+            // Send the client a message
+            String messageContent = "Order no: " + containerOrder.getOrderID()
+                    + " has been canceled";
+            // Create message object
+            Message message = new Message(0, messageContent, new Date().getTime(),
+                    0, new User(containerOrder.getClient().getUserID(), null, null, 0));
+            // Insert message
+            MessagesFacade messagesFacade = new MessagesFacade(message);
+            result = messagesFacade.insertMessage();
+        }
+        disconnect();
+        return result;
+    }
+    
+    public int clearContainerOrder() throws SQLException {
+        connect();
+        Statement statement = connection.createStatement();
+        String query = "UPDATE `ContainerOrders` SET `status` = \"Delivered\""
+                + " WHERE `ContainerOrders`.`orderID` = \""
+                + containerOrder.getOrderID() + "\"";
+        int result = statement.executeUpdate(query);
+        disconnect();
+        return result;
+    }
+
+    
     public int removeContainerOrder() throws SQLException {
         connect();
         Statement statement = connection.createStatement();
@@ -153,8 +187,9 @@ public class ContainerOrdersFacade extends AbstractFacade {
         connect();
         Statement statement = connection.createStatement();
         String query = "INSERT INTO `ContainerOrders`(`dateAdded`, `totalPrice`, "
-                + " `isApproved`, `clientID`) VALUES(\"" + containerOrder.getDateAdded()
-                + " \", \"" + containerOrder.getTotalPrice() + "\", \"" + 0 + "\", \""
+                + " `status`, `clientID`) VALUES(\"" + containerOrder.getDateAdded()
+                + " \", \"" + containerOrder.getTotalPrice() + "\", \""
+                + containerOrder.getStatus() + "\", \""
                 + containerOrder.getClient().getUserID() + "\")";
         int orderResult = statement.executeUpdate(query);
         int orderDetailResult = 0;
@@ -193,12 +228,12 @@ public class ContainerOrdersFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `ContainerOrders` WHERE `clientID` = \""
                 + client.getUserID() + "\" AND"
-                + " `dateAdded` > \"" + pastDate + "\" AND `isApproved` = \"" + 0 + "\"";
+                + " `dateAdded` > \"" + pastDate + "\" AND `status` = \"Delivered\"";
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next()) {
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), client, null);
+                    resultSet.getString("status"), client, null);
             // Add the containerOrders to clientContainerOrderList
             monthlyUnapprovedClientContainerOrderList.add(this.containerOrder);
         }
@@ -221,7 +256,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.`orderID`,"
                 + " `ContainerOrders`.`dateAdded`, `ContainerOrders`.`totalPrice`,"
-                + " `ContainerOrders`.`isApproved`, `ContainerOrders`.`clientID` FROM "
+                + " `ContainerOrders`.`status`, `ContainerOrders`.`clientID` FROM "
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `ContainerOrders` ON `Clients`.`clientID` ="
                 + " `ContainerOrders`.`clientID` WHERE `Users`.`isActive` = \""
@@ -241,7 +276,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), client, null);
+                    resultSet.getString("status"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 
@@ -265,7 +300,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.`orderID`, "
                 + "`ContainerOrders`.`dateAdded`, `ContainerOrders`.`totalPrice`,"
-                + " `ContainerOrders`.`isApproved`, `ContainerOrders`.`clientID` FROM "
+                + " `ContainerOrders`.`status`, `ContainerOrders`.`clientID` FROM "
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `ContainerOrders` ON `Clients`.`clientID` = "
                 + "`ContainerOrders`.`clientID` WHERE `Users`.`isActive` = \""
@@ -285,7 +320,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), client, null);
+                    resultSet.getString("status"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 
@@ -309,7 +344,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.`orderID`,"
                 + " `ContainerOrders`.`dateAdded`, `ContainerOrders`.`totalPrice`,"
-                + " `ContainerOrders`.`isApproved`, `ContainerOrders`.`clientID` FROM "
+                + " `ContainerOrders`.`status`, `ContainerOrders`.`clientID` FROM "
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `ContainerOrders` ON `Clients`.`clientID` = "
                 + "`ContainerOrders`.`clientID` WHERE `Users`.`isActive` = \""
@@ -329,7 +364,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), client, null);
+                    resultSet.getString("status"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 
@@ -353,7 +388,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.`orderID`, "
                 + "`ContainerOrders`.`dateAdded`, `ContainerOrders`.`totalPrice`,"
-                + " `ContainerOrders`.`isApproved`, `ContainerOrders`.`clientID` FROM "
+                + " `ContainerOrders`.`status`, `ContainerOrders`.`clientID` FROM "
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `ContainerOrders` ON `Clients`.`clientID` = "
                 + "`ContainerOrders`.`clientID` WHERE `Users`.`isActive` = \""
@@ -373,7 +408,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), client, null);
+                    resultSet.getString("status"), client, null);
             containerOrderList.add(containerOrder);
         }
 
@@ -397,7 +432,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         Statement statement = connection.createStatement();
         String query = "SELECT `Users`.*, `Clients`.*, `ContainerOrders`.`orderID`,"
                 + " `ContainerOrders`.`dateAdded`, `ContainerOrders`.`totalPrice`,"
-                + " `ContainerOrders`.`isApproved`, `ContainerOrders`.`clientID` FROM "
+                + " `ContainerOrders`.`status`, `ContainerOrders`.`clientID` FROM "
                 + " `Users` INNER JOIN `Clients` ON `Users`.`userID` = `Clients`.`clientID`"
                 + " INNER JOIN `ContainerOrders` ON `Clients`.`clientID` ="
                 + " `ContainerOrders`.`clientID` WHERE `Users`.`isActive` = \""
@@ -418,7 +453,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
 
             this.containerOrder = new ContainerOrder(resultSet.getInt("orderID"),
                     resultSet.getLong("dateAdded"), resultSet.getDouble("totalPrice"),
-                    resultSet.getInt("isApproved"), client, null);
+                    resultSet.getString("status"), client, null);
             containerOrderList.add(this.containerOrder);
         }
 

@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import ncgms.daos.AbstractFacade;
 import ncgms.entities.Client;
 import ncgms.entities.Driver;
 import ncgms.entities.Model;
@@ -43,7 +42,9 @@ public class TrucksFacade extends AbstractFacade {
         while (resultSet.next()) {
             this.truck = new Truck(resultSet.getString("plateNumber"),
                     resultSet.getInt("inService"), resultSet.getLong("dateAdded"),
-                    new Model(resultSet.getInt("modelID"), null));
+                    new Model(resultSet.getInt("modelID"),
+                            new ModelsFacade().searchModelById(
+                                    resultSet.getInt("modelID")).getModelName()));
             truckList.add(this.truck);
         }
 
@@ -79,6 +80,7 @@ public class TrucksFacade extends AbstractFacade {
             DriversFacade driversFacade = new DriversFacade(driver);
             newTruck.setDriver(driversFacade.loadTruckDriver());
         }
+
         disconnect();
         return truckList;
     }
@@ -208,7 +210,7 @@ public class TrucksFacade extends AbstractFacade {
         connect();
         ArrayList<Truck> truckList = new ArrayList<>();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `Trucks` WHERE `modelID` = \"" 
+        String query = "SELECT * FROM `Trucks` WHERE `modelID` = \""
                 + new ModelsFacade().searchModelByName(searchTerm).getModelID()
                 + "\" ORDER BY `dateAdded` DESC";
         ResultSet resultSet = statement.executeQuery(query);

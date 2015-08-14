@@ -88,7 +88,8 @@ public class ClientInvoiceController implements Serializable {
             /* Initialize the invoices */
 
         } catch (SQLException ex) {
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Could not intialize invoice list.",
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    "Could not intialize invoice list.",
                     "Could not initialize invoice list.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(ClientInvoiceController.class.getName()).log(Level.SEVERE, null, ex);

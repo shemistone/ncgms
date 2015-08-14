@@ -345,4 +345,14 @@ public class InvoicesFacade extends AbstractFacade {
         disconnect();
         return invoiceList;
     }
+
+    public int removeInvoice() throws SQLException{
+        connect();
+        Statement statement = connection.createStatement();
+        String query = "DELETE FROM `Invoices` WHERE `invoiceID` = \"" 
+                + this.invoice.getInvoiceID() + "\"";
+        int result = statement.executeUpdate(query);
+        disconnect();
+        return result;
+    }
 }

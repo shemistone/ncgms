@@ -74,7 +74,7 @@ public class ModelsFacade extends AbstractFacade {
     public Model searchModelById(int modelID) throws SQLException {
         connect();
         Statement statement = connection.createStatement();
-        String query = "SELECT * FROM `MModels` WHERE `modelID` = \"" 
+        String query = "SELECT * FROM `Models` WHERE `modelID` = \"" 
                 + modelID + "\"";
         ResultSet resultSet = statement.executeQuery(query);
         if(resultSet.next()){

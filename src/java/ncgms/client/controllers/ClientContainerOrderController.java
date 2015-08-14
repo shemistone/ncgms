@@ -32,7 +32,6 @@ public class ClientContainerOrderController implements Serializable {
 
     private List<ContainerOrder> containerOrderList = new ArrayList<>();
     private List<ContainerOrder> viewableContainerOrderList = new ArrayList<>();
-    private boolean noContainerOrdersRendered = false;
 
     /* For navigation */
     private int noOfPages = 0;
@@ -244,14 +243,6 @@ public class ClientContainerOrderController implements Serializable {
 
     public void setViewableContainerOrderList(List<ContainerOrder> viewableContainerOrderList) {
         this.viewableContainerOrderList = viewableContainerOrderList;
-    }
-
-    public boolean isNoContainerOrdersRendered() {
-        return containerOrderList.isEmpty();
-    }
-
-    public void setNoContainerOrdersRendered(boolean noContainerOrdersRendered) {
-        this.noContainerOrdersRendered = noContainerOrdersRendered;
     }
 
     public int getNoOfPages() {

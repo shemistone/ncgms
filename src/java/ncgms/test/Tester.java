@@ -27,11 +27,13 @@ import ncgms.entities.User;
 import ncgms.daos.ClientsFacade;
 import ncgms.daos.DriversFacade;
 import ncgms.daos.InvoicesFacade;
+import ncgms.daos.LogisticsManagersFacade;
 import ncgms.daos.PackagesFacade;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.ToutsFacade;
 import ncgms.daos.TrucksFacade;
 import ncgms.daos.UsersFacade;
+import ncgms.entities.LogisticsManager;
 import ncgms.util.PasswordHasher;
 import ncgms.util.SMSSender;
 
@@ -47,6 +49,8 @@ public class Tester {
     private static List<Student> studentList = new ArrayList<>();
 
     public static void main(String[] args) {
+        //insertAdmin();
+        //insertUsers();
         processInvoices();
     }
 
@@ -65,9 +69,12 @@ public class Tester {
         loadAllPackages();
 
         String firstName, lastName, phone, plotName, plateNumber, address, username,
-                password, email, packageName, passwordHash;
-        int idNumber, subcountyID;
+                password, email, passwordHash;
+        int idNumber;
         long dateAdded;
+        Subcounty subcounty;
+        Package packageObject;
+        Truck truck;
 
         for (int i = 0; i < 140; i++) {
             try {
@@ -88,11 +95,12 @@ public class Tester {
                         + student.getLname().substring(0, 1);
                 dateAdded = new Date().getTime();
                 idNumber = student.getIdNo();
-                subcountyID = 1 + new Random().nextInt(11);
-                plateNumber = truckList.get(new Random().nextInt(11)).getPlateNumber();
+                subcounty = subcountyList.get(new Random().nextInt(subcountyList.size()));
+                plateNumber = truckList.get(new Random().nextInt(truckList.size())).getPlateNumber();
                 username = student.getFname().toLowerCase();
                 password = student.getFname().toLowerCase() + "2015";
-                packageName = packageList.get(new Random().nextInt(3)).getPackageName();
+                packageObject = packageList.get(new Random().nextInt(3));
+                truck = truckList.get(new Random().nextInt(truckList.size()));
                 passwordHash = PasswordHasher.createHash(password);
 
                 // Create and insert user
@@ -102,29 +110,24 @@ public class Tester {
 
                 if (i < 100) {
                     // Create and insert client
-                    /*int userID, String username, String passwordHash,int isActive, String firstName, 
-                     String lastName, String address, String phone, String email, String plotName,
-                     long dateAdded, int idNumber, int wantsToCancel*/
-                    Client client = new Client(usersFacade.loadUserID(), null,
-                            null, 0, firstName, lastName, address, phone, email,
-                            plotName, dateAdded, idNumber, 0);
+                    Client client = new Client(usersFacade.loadUserID(), username,
+                            passwordHash, 0, firstName, lastName, address, phone, email,
+                            plotName, dateAdded, idNumber, 0, subcounty, null, packageObject);
                     ClientsFacade clientsFacade = new ClientsFacade(client);
                     clientsFacade.insertClient();
                 } else if (i >= 100 && i < 120) {
                     // Create and insert driver
-                    Driver driver = new Driver(usersFacade.loadUserID(), null, null, 0,
+                    Driver driver = new Driver(usersFacade.loadUserID(), username, passwordHash, 0,
                             firstName, lastName, phone, email, address, dateAdded,
-                            idNumber, "1434006529317_cv.docx", new Truck(plateNumber, 0, 0, null),
-                            new Subcounty(subcountyID, null));
+                            idNumber, "1434006529317_cv.docx", null,subcounty);
                     DriversFacade driversFacade = new DriversFacade(driver);
                     driversFacade.insertDriver();
                     System.out.print(driver);
                 } else {
                     // Create and insert tout
-                    Tout tout = new Tout(usersFacade.loadUserID(), null, null, 0,
+                    Tout tout = new Tout(usersFacade.loadUserID(), username, passwordHash, 0,
                             firstName, lastName, phone, email, address, dateAdded,
-                            idNumber, "1434006529317_cv.docx", new Truck(plateNumber, 0, 0, null),
-                            new Subcounty(subcountyID, null));
+                            idNumber, "1434006529317_cv.docx", null,subcounty);
                     ToutsFacade toutsFacade = new ToutsFacade(tout);
                     toutsFacade.insertTout();
                     System.out.print(tout);
@@ -161,9 +164,14 @@ public class Tester {
 
     public static void insertAdmin() {
         try {
-            User user = new User("admin", PasswordHasher.createHash("burton"), 1);
-            UsersFacade usersFacade = new UsersFacade(user);
+            LogisticsManager lm = new LogisticsManager(0, "admin", PasswordHasher.createHash("burton2015"),
+                    1, "Burton", "Muchemi", "shemistone@gmail.com", "0721868821");
+            UsersFacade usersFacade = new UsersFacade(lm);
             usersFacade.insertUser();
+            lm.setUserID(usersFacade.loadAdminUserID());
+            LogisticsManagersFacade lmf = new LogisticsManagersFacade(lm);
+            lmf.insertLogisticsManager();
+
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | SQLException ex) {
             Logger.getLogger(Tester.class.getName()).log(Level.SEVERE, null, ex);
         }

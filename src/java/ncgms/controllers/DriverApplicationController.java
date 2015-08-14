@@ -25,13 +25,15 @@ import javax.validation.constraints.Pattern;
 import ncgms.client.controllers.ClientApplicationController;
 import ncgms.entities.Driver;
 import ncgms.daos.DriversFacade;
+import ncgms.daos.LogisticsManagersFacade;
 import ncgms.daos.MessagesFacade;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.UsersFacade;
 import ncgms.entities.Message;
 import ncgms.entities.Truck;
 import ncgms.entities.User;
-import ncgms.util.SMSSender;
+import ncgms.util.EmailSenderTask;
+import ncgms.util.SMSSenderTask;
 
 /**
  *
@@ -41,30 +43,31 @@ import ncgms.util.SMSSender;
 @RequestScoped
 public class DriverApplicationController {
 
+    private Thread smsThread, emailThread;
     private List<String> subcountyList = null;
 
     private Part file;
 
     @Pattern(regexp = "^[A-Z]{1}(([A-Za-z]\\'?)|(\\'?[A-Za-z]))+$",
-            message = "Name format is invalid.")
+            message = "Name format is invalid. eg. John")
     private String firstName;
     @Pattern(regexp = "^[A-Z]{1}(([A-Za-z]\\'?)|(\\'?[A-Za-z]))+$",
-            message = "Name format is invalid.")
+            message = "Name format is invalid. eg. Doe")
     private String lastName;
     @Pattern(regexp = "^[0-9]{6,8}$",
-            message = "National ID number format is invalid.")
+            message = "National ID number format is invalid. eg 12345678")
     private String idNumber;
     @Pattern(regexp = "[a-z0-9_\\-\\.]+@[a-z0-9]+\\.[a-z0-9]+",
-            message = "Email format is invalid.")
+            message = "Email format is invalid. eg. johndoe@example.com")
     private String email;
     @Pattern(regexp = "^[0-9]{10}$",
-            message = "Phone number format is invalid.")
+            message = "Phone number format is invalid. 0712345678")
     private String phone;
     @Pattern(regexp = "^[A-Z]{1}(([A-Za-z]\\s*)|([A-Za-z]\\-?[A-Za-z])|([A-Za-z]\\'?))+$",
             message = "Select Subcounty.")
     private String subcounty;
     @Pattern(regexp = "^[0-9]+\\-{0,1}[0-9]{5}\\s+[a-zA-Z\\-\\s]*[a-zA-Z]$",
-            message = "Address format invalid.")
+            message = "Address format invalid. eg. 12-12345 Town")
     private String address;
 
     /**
@@ -90,21 +93,22 @@ public class DriverApplicationController {
         }
     }
 
-    public String uploadFile() throws IOException{
+    public String uploadFile() throws IOException {
         // Get the absolute path of the application
         ServletContext sc = (ServletContext) FacesContext.getCurrentInstance()
                 .getExternalContext().getContext();
         String cvName = sc.getRealPath("/");
-        
-        try(InputStream is = file.getInputStream()){
-        /* Start file upload */
+
+        try (InputStream is = file.getInputStream()) {
+            /* Start file upload */
             byte[] b = new byte[(int) file.getSize()];
             is.read(b);
             // Get the absolute path of the uploaded file
             cvName = cvName + "resources/uploads/cvs/" + String.valueOf(
                     new Date().getTime()) + "_" + file.getSubmittedFileName();
             FileOutputStream os = new FileOutputStream(cvName);
-            os.write(b);System.out.print(cvName);
+            os.write(b);
+            System.out.print(cvName);
             // Restore the relative path of the uploade file
             cvName = cvName.substring(cvName.indexOf("resources/uploads/cvs/")
                     + "resources/uploads/cvs/".length());
@@ -112,13 +116,13 @@ public class DriverApplicationController {
         }
         return cvName;
     }
-    
+
     public synchronized void insertDriver() {
 
         try {
 
             /* Start file upload */
-           String cvName = uploadFile();
+            String cvName = uploadFile();
             /* Finish file upload */
 
             // Create a new driver
@@ -148,13 +152,16 @@ public class DriverApplicationController {
                                 "Your application has been received.",
                                 "Your application has been  received.");
                         FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-                        this.address = this.email = this.firstName = this.idNumber
-                                = this.lastName = this.phone = this.subcounty = null;
-                        // Notify admin
-                        String moblieMessage = "Hello admin, you have a new"
+                        // Notify admin---------------------------------------------//                       
+                        String mobileMessage = "Hello admin, you have a new"
                                 + " driver application. NCGMS Inc.";
-                        SMSSender.sendSmsSynchronous("0721868821",
-                                moblieMessage);
+                        smsThread = new Thread(new SMSSenderTask(new LogisticsManagersFacade().
+                                searchLogisticsManagerByUsername("admin").getPhoneNo(),
+                                mobileMessage));
+                        smsThread.start();
+                        emailThread = new Thread(new EmailSenderTask(email,
+                                "Client Application", mobileMessage));
+                        emailThread.start();
                         String systemMessage = "Hello admin, you have a new"
                                 + " driver application.";
                         User admin = new User(new UsersFacade().loadAdminUserID(),
@@ -163,6 +170,19 @@ public class DriverApplicationController {
                                 0, admin);
                         MessagesFacade messagesFacade = new MessagesFacade(message);
                         messagesFacade.insertMessage();
+                        // -----------------------------------------------------------//
+                        // Notify client-----------------------------------------------//
+                        mobileMessage = "Your application has been successfully received. "
+                                + " You will be notified on the interview date. Thank you"
+                                + ". NCGMS inc";
+                        smsThread = new Thread(new SMSSenderTask(phone, mobileMessage));
+                        smsThread.start();
+                        emailThread = new Thread(new EmailSenderTask(email,
+                                "Driver Application", mobileMessage));
+                        emailThread.start();
+                        //-------------------------------------------------------//
+                        this.address = this.email = this.firstName = this.idNumber
+                                = this.lastName = this.phone = this.subcounty = null;
                     } else {
                         // Pass
                     }
@@ -186,9 +206,6 @@ public class DriverApplicationController {
             java.util.logging.Logger.getLogger(
                     DriverApplicationController.class.getName()).
                     log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DriverApplicationController.class.getName()).
-                    log(Level.SEVERE, null, ex);
         }
     }
 
@@ -205,7 +222,7 @@ public class DriverApplicationController {
             // Check the file type
             if (!"application/msword".equals(file.getContentType())
                     && !"application/vnd.openxmlformats-officedocument.wordprocessingml.document".
-                            equals(file.getContentType())) {
+                    equals(file.getContentType())) {
                 error = "File should be a microsoft word file";
                 throw new ValidatorException(new FacesMessage(
                         FacesMessage.SEVERITY_ERROR, error, error));
@@ -287,6 +304,22 @@ public class DriverApplicationController {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Thread getSmsThread() {
+        return smsThread;
+    }
+
+    public void setSmsThread(Thread smsThread) {
+        this.smsThread = smsThread;
+    }
+
+    public Thread getEmailThread() {
+        return emailThread;
+    }
+
+    public void setEmailThread(Thread emailThread) {
+        this.emailThread = emailThread;
     }
 
 }

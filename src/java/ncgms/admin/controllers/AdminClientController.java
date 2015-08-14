@@ -5,13 +5,14 @@
  */
 package ncgms.admin.controllers;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -20,9 +21,9 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import ncgms.entities.Client;
 import ncgms.daos.ClientsFacade;
-import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.TrucksFacade;
-import ncgms.util.SMSSender;
+import ncgms.util.EmailSenderTask;
+import ncgms.util.SMSSenderTask;
 
 /**
  *
@@ -32,12 +33,13 @@ import ncgms.util.SMSSender;
 @SessionScoped
 public class AdminClientController implements Serializable {
 
+    private ExecutorService executorService;
     private String searchBy = null;
     private String searchTerm = null;
     private String[] searchByArray = new String[]{"Plot Name", "First Name",
         "Last Name", "Subcounty", "Address", "Assigned Truck", "Phone Number", "Email"};
     private List<String> plateNumberList = new ArrayList<>();
-    private Map<Integer, String> subcountyNamesMap = new HashMap<>();
+    //private Map<Integer, String> subcountyNamesMap = new HashMap<>();
     private List<Client> clientList = new ArrayList<>();
     private List<Client> viewableClientList = new ArrayList<>();
 
@@ -64,10 +66,6 @@ public class AdminClientController implements Serializable {
             // Populate the plateNumberList
             TrucksFacade trucksFacade = new TrucksFacade();
             this.plateNumberList = trucksFacade.populatePlateNumberList();
-
-            // Load subcounty names into map
-            SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
 
             ClientsFacade clientsFacade = new ClientsFacade();
             this.clientList = clientsFacade.loadAllClients();
@@ -114,10 +112,6 @@ public class AdminClientController implements Serializable {
             // Populate the plateNumberList
             TrucksFacade trucksFacade = new TrucksFacade();
             this.plateNumberList = trucksFacade.populatePlateNumberList();
-
-            // Load subcounty names into map
-            SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
 
             // Set the number of pages
             this.noOfPages = this.clientList.size() / 10;
@@ -227,19 +221,25 @@ public class AdminClientController implements Serializable {
         }
 
     }
-    
+
     public void acceptAppliaction(Client client) {
         try {
+            this.executorService = Executors.newCachedThreadPool();
             // Create a new ClientsFacade
             ClientsFacade clientsFacade = new ClientsFacade(client);
             int result = clientsFacade.approveApplication();
             if (result == 1) {
                 // Set the client as active
                 client.setIsActive(1);
-                SMSSender.sendSmsSynchronous(client.getPhone(), "Hello "
+                // Notify client----------------------------------------------//
+                String message = "Hello "
                         + client.getFirstName() + " " + client.getLastName()
                         + ". Your application has been accepted,"
-                        + " you may now log in. Thank you for your business support. NCGMS Inc.");
+                        + " you may now log in. Thank you for your business support. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(client.getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(client.getEmail(),
+                        "Client Application", message));
+                //--------------------------------------------------------------//
             } else {
                 // Pass
             }
@@ -249,13 +249,26 @@ public class AdminClientController implements Serializable {
                     "Could not approve application.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            this.executorService.shutdown();;
         }
     }
 
-    public void removeClient(Client client) {//System.out.print(client);
+    public void removeClient(Client client) {
         try {
+            // Check if client has truck ssigned to them
+            if (client.getTruck() != null) {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        client.getPlotName() + " is still assigned to "
+                        + client.getTruck().getPlateNumber() + ". Unassign the client"
+                        + " first and try again.",
+                        client.getPlotName() + " is still assigned to "
+                        + client.getTruck().getPlateNumber() + ". Unassign the client"
+                        + " first and try again.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+                return;
+            }
+            this.executorService = Executors.newCachedThreadPool();
             ClientsFacade clientsFacade = new ClientsFacade(client);
             int result = clientsFacade.removeClient();
             if (result == 1) {
@@ -263,6 +276,11 @@ public class AdminClientController implements Serializable {
                         "Client successfully removed.",
                         "Client successfully removed.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+
+                String message = "Hello " + client.getFirstName() + ", your account has been"
+                        + " permanently deactivated. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(client.getPhone(),
+                        message));
             } else {
                 // Pass
             }
@@ -273,12 +291,13 @@ public class AdminClientController implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
+            executorService.shutdown();
             // Get current page
             int page = this.currentPage;
             // Initialize client list
             this.initializeClientList();
             // Go back to current page
-            for(int i = 1; i < page; i++){
+            for (int i = 1; i < page; i++) {
                 nextClientPage();
             }
 
@@ -288,6 +307,15 @@ public class AdminClientController implements Serializable {
 
     public void rejectApplication(Client client) {
         this.removeClient(client);
+        // Notify client----------------------------------------------//
+        String message = "Hello "
+                + client.getFirstName() + " " + client.getLastName()
+                + ". We would like to inform you that your application has been decline"
+                + ". Please contact us for further information. Thank you. NCGMS Inc.";
+        this.executorService.execute(new SMSSenderTask(client.getPhone(), message));
+        this.executorService.execute(new EmailSenderTask(client.getEmail(),
+                "Garbage Collection Application", message));
+        //--------------------------------------------------------------//
     }
 
     public void searchClients() {
@@ -325,7 +353,7 @@ public class AdminClientController implements Serializable {
         } finally {
             if (this.clientList.isEmpty()) {
                 this.initializeClientList();
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                         "No Results",
                         "No Results");
                 FacesContext.getCurrentInstance().addMessage("clients_form:search_button",
@@ -343,7 +371,7 @@ public class AdminClientController implements Serializable {
 
     public void saveClientChanges(Client client) {
         try {
-            // Update
+            // Update client's Truck
             client.setTruck(client.getTruck());
             ClientsFacade clientsFacade = new ClientsFacade();
             int result = clientsFacade.updateClient(client);
@@ -361,7 +389,7 @@ public class AdminClientController implements Serializable {
                     "Could not update client.",
                     "Could not update client.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-            
+
             Logger.getLogger(AdminInvoiceController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             client.setEditable(false);
@@ -403,7 +431,7 @@ public class AdminClientController implements Serializable {
     public void setPlateNumberList(List<String> plateNumberList) {
         this.plateNumberList = plateNumberList;
     }
-
+/*
     public Map<Integer, String> getSubcountyNamesMap() {
         return subcountyNamesMap;
     }
@@ -411,7 +439,7 @@ public class AdminClientController implements Serializable {
     public void setSubcountyNamesMap(Map<Integer, String> subcountyNamesMap) {
         this.subcountyNamesMap = subcountyNamesMap;
     }
-
+*/
     public List<Client> getClientList() {
         return clientList;
     }

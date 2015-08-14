@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -19,6 +21,8 @@ import javax.faces.context.FacesContext;
 import ncgms.client.controllers.ClientInvoiceController;
 import ncgms.entities.Invoice;
 import ncgms.daos.InvoicesFacade;
+import ncgms.util.EmailSenderTask;
+import ncgms.util.SMSSenderTask;
 
 /**
  *
@@ -28,6 +32,7 @@ import ncgms.daos.InvoicesFacade;
 @SessionScoped
 public class AdminInvoiceController implements Serializable {
 
+    private ExecutorService executorService;
     private String searchBy = null;
     private String searchTerm = null;
     private String[] searchByArray = new String[]{
@@ -35,7 +40,6 @@ public class AdminInvoiceController implements Serializable {
 
     private List<Invoice> invoiceList = new ArrayList<>();
     private List<Invoice> viewableInvoiceList = new ArrayList<>();
-    private boolean noInvoicesRendered = false;
 
     /* For navigation */
     private int noOfPages = 0;
@@ -237,7 +241,7 @@ public class AdminInvoiceController implements Serializable {
 
     public void saveInvoiceChanges(Invoice invoice) {
         try {
-
+            this.executorService = Executors.newCachedThreadPool();
             int result = 0;
             if (invoice.getAmountPaid() > 0) {
                 // Update balance and date paid
@@ -250,7 +254,15 @@ public class AdminInvoiceController implements Serializable {
                             "Invoice No  " + invoice.getInvoiceID() + " updated.",
                             "Invoice No : " + invoice.getInvoiceID() + " updated.");
                     FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-
+                    // Notify client-------------------------------------------//
+                    String message = "Hello " + invoice.getClient().getFirstName()
+                            + ", Your invoice with invoice ID: " + invoice.getInvoiceID()
+                            + " has been credited with KShs: " + invoice.getAmountPaid();
+                    this.executorService.execute(new SMSSenderTask(invoice.getClient().getPhone(),
+                            message));
+                    this.executorService.execute(new EmailSenderTask(invoice.getClient().getEmail(),
+                            "Invoice", message));
+                    //---------------------------------------------------------//
                 } else {
                     // Pass
                 }
@@ -260,6 +272,46 @@ public class AdminInvoiceController implements Serializable {
             Logger.getLogger(AdminInvoiceController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             invoice.setEditable(false);
+        }
+
+    }
+
+    public void removeInvoice(Invoice invoice) {
+        try {
+            // Check if invoice is cleared
+            if (invoice.getBalance() > 0) {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "Cannot delete uncleared invoice.",
+                        "Cannot delete uncleared invoice.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+                return;
+            }
+            InvoicesFacade invoicesFacade = new InvoicesFacade(invoice);
+            int result = invoicesFacade.removeInvoice();
+            if (result == 1) {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Invoice successfully removed.",
+                        "Invoice successfully removed.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+            } else {
+                // Pass
+            }
+        } catch (SQLException ex) {
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Could not remove invoice. Please contact the system administrator",
+                    "Could not remove invoice. Please contact the system administrator");
+            FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+            Logger.getLogger(AdminInvoiceController.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            // Get current page
+            int page = this.currentPage;
+            // Initialize driver list
+            this.initializeInvoiceList();
+            // Go back to current page
+            for (int i = 1; i < page; i++) {
+                nextInvoicePage();
+            }
+
         }
 
     }
@@ -302,14 +354,6 @@ public class AdminInvoiceController implements Serializable {
 
     public void setViewableInvoiceList(List<Invoice> viewableInvoiceList) {
         this.viewableInvoiceList = viewableInvoiceList;
-    }
-
-    public boolean isNoInvoicesRendered() {
-        return invoiceList.isEmpty();
-    }
-
-    public void setNoInvoicesRendered(boolean noInvoicesRendered) {
-        this.noInvoicesRendered = noInvoicesRendered;
     }
 
     public int getNoOfPages() {

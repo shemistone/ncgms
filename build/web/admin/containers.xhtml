@@ -26,7 +26,7 @@
                 Please fill in the form below.
             </p>
             
-            <label for="name">Container Name: *</label>
+            <label for="name">Name/Description: *</label>
             <h:inputText id="name" value="#{adminContainerController.name}"/>
             <h:message for="name" errorClass="error" infoClass="info"/>
             <br />
@@ -50,7 +50,8 @@
 
             <h:commandLink action="#{adminContainerController.insertContainer}" 
                            style="margin: 0.4em 0 0.4em 15%">
-                <h:graphicImage library="icons" name="add.png" style="margin: 0 2px -2px 0"/>Add Container
+                <h:graphicImage library="icons" name="add.png" 
+                                style="margin: 0 2px -2px 0"/>Add Container
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
         </h:form>
@@ -67,8 +68,7 @@
                          var="containerElement"
                          rendered="#{adminContainerController.containerList.size() != 0}">
                 <h:column>
-                    <h:graphicImage library="uploads/images" name="#{containerElement.fileName}" 
-                                    height="100"/><br />
+                    <h:graphicImage library="uploads/images" name="#{containerElement.fileName}"/><br />
                     <h:outputText value="#{containerElement.name}"/><br />  
                     <h:outputText value="Price: #{containerElement.realPrice}"/><br />                    
                     <h:outputText value="#{containerElement.noOfContainers} in stock"/><br />
@@ -93,8 +93,8 @@
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>
                     <h:commandLink action="#{adminContainerController.removeContainer(containerElement)}">
-                        <h:graphicImage library="icons" name="delete.png" 
-                                        style="margin: 0 2px -2px 0"/>Remove
+                        <h:graphicImage library="icons" name="trash.png" 
+                                        style="margin: 0 2px -2px 0"/>Trash
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>
                 </h:column>                    

@@ -11,18 +11,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.inject.Inject;
 import javax.validation.constraints.Pattern;
 import ncgms.entities.Truck;
 import ncgms.daos.ModelsFacade;
 import ncgms.daos.TrucksFacade;
 import ncgms.entities.Model;
+import ncgms.entities.Tout;
+import ncgms.util.EmailSenderTask;
+import ncgms.util.SMSSenderTask;
 
 /**
  *
@@ -31,6 +35,8 @@ import ncgms.entities.Model;
 @ManagedBean
 @SessionScoped
 public class AdminTruckController implements Serializable {
+
+    private ExecutorService executorService;
 
     private String searchBy = null;
     private String searchTerm = null;
@@ -57,10 +63,6 @@ public class AdminTruckController implements Serializable {
             message = "Select truck model.")
     private String modelName;
 
-    // Injections
-    @Inject
-    AdminDriverController driverController;
-
     /**
      * Creates a new instance of TruckController
      */
@@ -77,10 +79,6 @@ public class AdminTruckController implements Serializable {
             ModelsFacade modelsFacade = new ModelsFacade();
             this.modelList = modelsFacade.populateModelList();
 
-            // Populate map of modelIDs
-            //this.modelIDsMap = modelsFacade.loadModelIDsMap();
-            // Populate map of modelNames
-            //this.modelNamesMap = modelsFacade.loadModelNamesMap();
             // Load all the trucks
             TrucksFacade trucksFacade = new TrucksFacade();
             this.truckList = trucksFacade.loadAllTrucks();
@@ -126,10 +124,6 @@ public class AdminTruckController implements Serializable {
             ModelsFacade modelsFacade = new ModelsFacade();
             this.modelList = modelsFacade.populateModelList();
 
-            // Populate map of modelIDs
-            //this.modelIDsMap = modelsFacade.loadModelIDsMap();
-            // Populate map of modelNames
-            //this.modelNamesMap = modelsFacade.loadModelNamesMap();
             // Set the number of pages
             this.noOfPages = this.truckList.size() / 10;
             // Set the last page
@@ -275,6 +269,7 @@ public class AdminTruckController implements Serializable {
 
     public void suspendTruck(Truck truck) {
         try {
+
             // Check if the truck has any assigned clients, drivers or touts
             if (!truck.getClientList().isEmpty()) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
@@ -288,7 +283,7 @@ public class AdminTruckController implements Serializable {
                         "Please unassign this truck from touts, before suspending it.");
                 FacesContext.getCurrentInstance().addMessage("trucks_form", facesMessage);
                 return;
-            } else if (truck.getDriver() == null) {
+            } else if (truck.getDriver() != null) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
                         "Please unassign this truck's driver, before removing it.",
                         "Please unassign this truck's driver, before suspending removing it.");
@@ -301,6 +296,26 @@ public class AdminTruckController implements Serializable {
             if (result == 1) {
                 // Set the truck as not in service
                 truck.setInService(0);
+                //Notify Driver-------------------------------------------------//
+                String message = "Hello " + truck.getDriver().getFirstName()
+                        + " Truck : " + truck.getPlateNumber() + " has been suspended."
+                        + " Please contact the Logistcis Manager for more information."
+                        + " NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(truck.getDriver().getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(truck.getDriver().getEmail(),
+                        "Truck Suspension", message));
+                //--------------------------------------------------------------//
+                //Notify Touts---------------------------------------------------//
+                for (Tout tout : truck.getToutList()) {
+                    message = "Hello " + tout.getFirstName()
+                            + " Truck : " + truck.getPlateNumber() + " has been suspended."
+                            + " Please contact the Logistcis Manager for more information."
+                            + " NCGMS Inc.";
+                    this.executorService.execute(new SMSSenderTask(tout.getPhone(), message));
+                    this.executorService.execute(new EmailSenderTask(tout.getEmail(),
+                            "Truck Suspension", message));
+                }
+                //--------------------------------------------------------------//
             } else {
                 // Pass
             }
@@ -321,6 +336,26 @@ public class AdminTruckController implements Serializable {
             if (result == 1) {
                 // Set the truck as in service
                 truck.setInService(1);
+                //Notify Driver-------------------------------------------------//
+                String message = "Hello " + truck.getDriver().getFirstName()
+                        + " Truck : " + truck.getPlateNumber() + " has been unsuspended."
+                        + " Please contact the Logistcis Manager for more information."
+                        + " NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(truck.getDriver().getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(truck.getDriver().getEmail(),
+                        "Truck Unsuspension", message));
+                //--------------------------------------------------------------//
+                //Notify Touts---------------------------------------------------//
+                for (Tout tout : truck.getToutList()) {
+                    message = "Hello " + tout.getFirstName()
+                            + " Truck : " + truck.getPlateNumber() + " has been suspended."
+                            + " Please contact the Logistcis Manager for more information."
+                            + " NCGMS Inc.";
+                    this.executorService.execute(new SMSSenderTask(tout.getPhone(), message));
+                    this.executorService.execute(new EmailSenderTask(tout.getEmail(),
+                            "Truck Unsuspension", message));
+                }
+                //--------------------------------------------------------------//
             } else {
                 // Pass
             }
@@ -335,6 +370,7 @@ public class AdminTruckController implements Serializable {
 
     public void removeTruck(Truck truck) {
         try {
+            this.executorService = Executors.newCachedThreadPool();
             // Check if the truck has any assigned clients, drivers or touts
             if (!truck.getClientList().isEmpty()) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
@@ -348,7 +384,7 @@ public class AdminTruckController implements Serializable {
                         "Please unassign this truck from touts, before removing it.");
                 FacesContext.getCurrentInstance().addMessage("trucks_form", facesMessage);
                 return;
-            } else if (truck.getDriver() == null) {
+            } else if (truck.getDriver() != null) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
                         "Please unassign this truck's driver, before removing it.",
                         "Please unassign this truck's driver, before removing it.");
@@ -359,6 +395,26 @@ public class AdminTruckController implements Serializable {
             TrucksFacade trucksFacade = new TrucksFacade(truck);
             int result = trucksFacade.removeTruck();
             if (result == 1) {
+                //Notify Driver-------------------------------------------------//
+                String message = "Hello " + truck.getDriver().getFirstName()
+                        + " Truck : " + truck.getPlateNumber() + " has been permanetly removed."
+                        + " Please contact the Logistcis Manager for more information."
+                        + " NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(truck.getDriver().getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(truck.getDriver().getEmail(),
+                        "Truck Removal", message));
+                //--------------------------------------------------------------//
+                //Notify Touts---------------------------------------------------//
+                for (Tout tout : truck.getToutList()) {
+                    message = "Hello " + tout.getFirstName()
+                            + " Truck : " + truck.getPlateNumber() + " has been permanently removed."
+                            + " Please contact the Logistcis Manager for more information."
+                            + " NCGMS Inc.";
+                    this.executorService.execute(new SMSSenderTask(tout.getPhone(), message));
+                    this.executorService.execute(new EmailSenderTask(tout.getEmail(),
+                            "Truck Removal", message));
+                }
+                //--------------------------------------------------------------//
                 // Get current page
                 int page = this.currentPage;
                 // Initialize truck list
@@ -402,9 +458,11 @@ public class AdminTruckController implements Serializable {
         } finally {
             if (this.truckList.isEmpty()) {
                 this.initializeTruckList();
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, "No Results",
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "No Results",
                         "No Results");
-                FacesContext.getCurrentInstance().addMessage("trucks_form:search_button", facesMessage);
+                FacesContext.getCurrentInstance().addMessage("trucks_form:search_button",
+                        facesMessage);
             } else {
                 this.searchTerm = null;
                 initializeResultList();

@@ -5,7 +5,6 @@
  */
 package ncgms.client.controllers;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -14,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -29,6 +30,7 @@ import ncgms.entities.User;
 import ncgms.entities.Package;
 import ncgms.util.PasswordHasher;
 import ncgms.daos.ClientsFacade;
+import ncgms.daos.LogisticsManagersFacade;
 import ncgms.daos.MessagesFacade;
 import ncgms.daos.PackagesFacade;
 import ncgms.daos.SubcountiesFacade;
@@ -36,7 +38,8 @@ import ncgms.daos.UsersFacade;
 import ncgms.entities.Message;
 import ncgms.entities.Subcounty;
 import ncgms.entities.Truck;
-import ncgms.util.SMSSender;
+import ncgms.util.EmailSenderTask;
+import ncgms.util.SMSSenderTask;
 
 /**
  * Controller class for client registration page
@@ -48,34 +51,36 @@ import ncgms.util.SMSSender;
 @RequestScoped
 public class ClientApplicationController implements Serializable {
 
+    private ExecutorService executorService;
+
     private List<String> subcountyList = new ArrayList<>();
     private List<String> packageList = new ArrayList<>();
 
     @Pattern(regexp = "^[A-Z]{1}(([A-Za-z]\\'?)|(\\'?[A-Za-z]))+$",
-            message = "Name format is invalid.")
+            message = "Name format is invalid. eg. John")
     private String firstName;
     @Pattern(regexp = "^[A-Z]{1}(([A-Za-z]\\'?)|(\\'?[A-Za-z]))+$",
-            message = "Name format is invalid.")
+            message = "Name format is invalid. eg. Doe")
     private String lastName;
     @Pattern(regexp = "^[0-9]{6,8}$",
-            message = "National ID number format is invalid.")
+            message = "National ID number format is invalid. eg 12345678")
     private String idNumber;
     @Pattern(regexp = "[a-zA-Z0-9_\\-\\.]+@[a-zA-Z0-9]+\\.[a-zA-Z0-9]+",
-            message = "Email format is invalid.")
+            message = "Email format is invalid. eg. johndoe@example.com")
     private String email;
     @Pattern(regexp = "^[0-9]{10}$",
-            message = "Phone number format is invalid.")
+            message = "Phone number format is invalid. 0712345678")
     private String phone;
     @Pattern(regexp = "^[A-Z]{1}(([A-Za-z]\\s*)|([A-Za-z]\\-?[A-Za-z])|([A-Za-z]\\'?))+$",
             message = "Select Subcounty.")
     private String subcounty;
     @Pattern(regexp = "^[0-9]+\\-{0,1}[0-9]{5}\\s+[a-zA-Z\\-\\s]*[a-zA-Z]$",
-            message = "Address format invalid.")
+            message = "Address format invalid. eg. 12-12345 Town")
     private String address;
-    @Pattern(regexp = "^[A-Z]{1}(([A-Za-z]\\s*)|([A-Za-z]\\-?[A-Za-z])|([A-Za-z]\\'?))+$",
-            message = "Plot name format is invalid.")
+    @Pattern(regexp = "^[A-Z]{1}(([A-Za-z0-9]\\s*)|([A-Za-z0-9]\\-?[A-Za-z0-9])|([A-Za-z0-9]\\'?))+$",
+            message = "Plot name format is invalid. eg. Hiller Park Estate")
     private String plotName;
-    @Pattern(regexp = "^.+$", message = "Username format is invalid.")
+    @Pattern(regexp = "^.+$", message = "Username format is invalid. eg. john")
     private String username;
     @Pattern(regexp = "^.*[a-zA-Z0-9]{8}+.*$",
             message = "Password must be at least 8 alphanumeric characters.")
@@ -163,8 +168,10 @@ public class ClientApplicationController implements Serializable {
      */
     public void insertClient() {
 
+        this.executorService = Executors.newCachedThreadPool();
+
         try {
-            // Check if username already exists
+        // Check if username already exists
             UsersFacade usersFacade = new UsersFacade();
             User user = (User) usersFacade.searchUserByUsername(username);
             //Check if user exists
@@ -213,23 +220,40 @@ public class ClientApplicationController implements Serializable {
                                 + "application has been approved.");
                         FacesContext.getCurrentInstance().addMessage(null,
                                 facesMessage);
-                        this.address = this.email = this.firstName = this.idNumber
-                                = this.lastName = this.password = this.passwordAgain
-                                = this.phone = this.plotName = this.subcounty
-                                = this.username = null;
-                        // Notify admin
+
+                        // Notify admin---------------------------------------------//
                         String mobileMessage = "Hello admin, you have a new"
                                 + " client application. NCGMS Inc.";
-                        SMSSender.sendSmsSynchronous("0721868821",
-                                mobileMessage);
+                       
+                        this.executorService.execute(new SMSSenderTask(new LogisticsManagersFacade().
+                                searchLogisticsManagerByUsername("admin").getPhoneNo(),
+                                mobileMessage));
+                     
+                        this.executorService.execute(new EmailSenderTask(email,
+                                "Client Application", mobileMessage));
+
                         String systemMessage = "Hello admin, you have a new"
-                                + " client application. NCGMS Inc.";
+                                + " client application.";
                         User admin = new User(new UsersFacade().loadAdminUserID(),
                                 "admin", null, 1);
                         Message message = new Message(systemMessage, new Date().getTime(),
                                 0, admin);
                         MessagesFacade messagesFacade = new MessagesFacade(message);
                         messagesFacade.insertMessage();
+                        // -----------------------------------------------------------//
+                        // Notify client-----------------------------------------------//
+                        mobileMessage = "Your application has been successfully received. "
+                                + " You will be able to log in once your "
+                                + "application has been approved. NCGMS Inc.";
+                       
+                        this.executorService.execute(new SMSSenderTask(phone, mobileMessage));
+                        this.executorService.execute(new EmailSenderTask(email,
+                                "Client Application", mobileMessage));
+                        //-------------------------------------------------------//
+                        this.address = this.email = this.firstName = this.idNumber
+                                = this.lastName = this.password = this.passwordAgain
+                                = this.phone = this.plotName = this.subcounty
+                                = this.username = this.packageName = null;
                     } else {
                         // Pass
                     }
@@ -251,9 +275,8 @@ public class ClientApplicationController implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(ClientApplicationController.class.getName()).
                     log(Level.SEVERE, null, ex);
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(ClientApplicationController.class.getName()).
-                    log(Level.SEVERE, null, ex);
+        } finally {
+            executorService.shutdown();
         }
     }
 

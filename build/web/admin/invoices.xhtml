@@ -25,8 +25,6 @@
             <h:outputText value="There are no Invoices" 
                           rendered="#{adminInvoiceController.invoiceList.size()  == 0}"/>
             <br />
-            <h:messages globalOnly="true" errorClass="error" infoClass="info"
-                        warnClass="warn"/>
             <h:outputLabel for="search" value="Search by:" 
                            rendered="#{adminInvoiceController.invoiceList.size() != 0}"/>
             <h:selectOneMenu id="search" value="#{adminInvoiceController.searchBy}" 
@@ -41,7 +39,10 @@
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:message for="search_button" errorClass="error" infoClass="info"/><br />
-
+            
+            <h:messages globalOnly="true" errorClass="error" infoClass="info"
+                        warnClass="warn"/>
+            
             <h:outputText class="pages" value="Page #{adminInvoiceController.currentPage} of #{adminInvoiceController.noOfPages}"
                           rendered="#{adminInvoiceController.invoiceList.size() != 0}"/>
 
@@ -166,7 +167,12 @@
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>
                 </h:column>
-
+                <h:column>
+                    <h:commandLink action="#{adminInvoiceController.removeInvoice(invoiceElement)}">
+                        <h:graphicImage library="icons" name="trash.png" style="margin: 0 2px -2px 0"/>Trash
+                        <f:ajax event="action" execute="@form" render="@all"/>
+                    </h:commandLink>
+                </h:column>
 
             </h:dataTable>
             <h:outputText class="pages" value="Page #{adminInvoiceController.currentPage} of #{adminInvoiceController.noOfPages}"

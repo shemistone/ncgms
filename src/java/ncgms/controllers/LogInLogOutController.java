@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -31,14 +32,16 @@ import ncgms.entities.LogisticsManager;
 @SessionScoped
 public class LogInLogOutController implements Serializable {
 
+    private ExecutorService executorService;
     private HttpSession httpSession = null;
     private Client client = new Client();
     private LogisticsManager logisticsManager = new LogisticsManager();
     private User user = new User();
-
-    @Pattern(regexp = "^.+$", message = "Please enter username.")
+    private int failedTries;
+    private String previousUsername = null;
+    @Pattern(regexp = "^.+$", message = "Input Username.")
     private String username;
-    @Pattern(regexp = "^.+$", message = "Please enter password.")
+    @Pattern(regexp = "^.+$", message = "Input Password.")
     private String password;
 
     /**
@@ -175,8 +178,9 @@ public class LogInLogOutController implements Serializable {
 
     public String logIn() {
         try {
+            this.executorService = Executors.newCachedThreadPool();
             UsersFacade usersFacade = new UsersFacade();
-            // Get the user's passwordHash from the database
+            // Get the user
             this.user = (User) usersFacade.searchUserByUsername(username);
 
             boolean valid = false;
@@ -184,21 +188,29 @@ public class LogInLogOutController implements Serializable {
                 valid = PasswordHasher.validatePassword(password,
                         this.user.getPasswordHash());
                 usersFacade.setUser(this.user);
-            }
-
-            // Check if the credentials check out
-            if (valid) {
-                // Check if the user has been approved by the administrator
+                // Check if account is active
                 if (!usersFacade.isActive()) {
                     FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Pending approval, try again later",
-                            "Pending approval, try again later");
+                            "Your account is inactive.",
+                            "Your account is inactive.");
                     FacesContext.getCurrentInstance().addMessage("user_log_in_form:password",
                             facesMessage);
                     return "/log_in";
                 }
 
-                // Get session and set and set an attribute
+            } else {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "Invalid Log In Credentials.",
+                        "Invalid Log In Credentials.");
+                FacesContext.getCurrentInstance().addMessage("user_log_in_form:username",
+                        facesMessage);
+                return "/log_in";
+            }
+
+            // The user credentials are valid
+            if (valid) {
+                
+                // Get session and set an attribute
                 String userCategory = usersFacade.loadUserCategory();
                 switch (userCategory) {
                     case "client":
@@ -208,10 +220,12 @@ public class LogInLogOutController implements Serializable {
                         this.client = clientsFacade.searchClientByClientID(this.user.getUserID());
                         // Check if the user wants to cancel
                         if (this.client.getWantsToCancel() == 1) {
-                            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                                    "Your account is inactive",
-                                    "Your account is inactive");
-                            FacesContext.getCurrentInstance().addMessage("user_log_in_form:password",
+                            FacesMessage facesMessage = new FacesMessage(
+                                    FacesMessage.SEVERITY_ERROR,
+                                    "Your deactivated your account.",
+                                    "Your deactivated your account.");
+                            FacesContext.getCurrentInstance().addMessage(
+                                    "user_log_in_form:password",
                                     facesMessage);
                             return "/log_in";
                         }
@@ -239,11 +253,28 @@ public class LogInLogOutController implements Serializable {
                     default:
                         break;
                 }
-
-            } else {
+                this.failedTries = 0;
+            } else {// User credentials invalid
+                this.failedTries += 1;
+                // Deactivate account if tries are more or equal to three
+                if (this.failedTries >= 3 && this.previousUsername.equals(this.username)) {
+                    usersFacade.deactivateUser();
+                    FacesMessage facesMessage = new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Your account has been blocked. Use the"
+                            + " \"Forgot Password?\" link to unblock it.",
+                            "Your account has been blocked. Use the "
+                            + "\"Forgot Password?\" link to unblock it.");
+                    FacesContext.getCurrentInstance().addMessage(
+                            null,
+                            facesMessage);
+                    return "/log_in";
+                }else if(this.failedTries >= 3 && !this.previousUsername.equals(this.username)){
+                    this.failedTries = 0;
+                }
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                        "Invalid Log In credentials",
-                        "Invalid Log In credentials");
+                        "Invalid Log In Credentials",
+                        "Invalid Log In Credentials");
                 FacesContext.getCurrentInstance().addMessage("user_log_in_form:password",
                         facesMessage);
                 return "/log_in";
@@ -255,6 +286,9 @@ public class LogInLogOutController implements Serializable {
                     "Could not connecct to database");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(LogInLogOutController.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            // Set previous username
+            this.previousUsername = this.username;
         }
         return "/log_in";
     }
@@ -338,6 +372,14 @@ public class LogInLogOutController implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public int getFailedTries() {
+        return failedTries;
+    }
+
+    public void setFailedTries(int failedTries) {
+        this.failedTries = failedTries;
     }
 
 }

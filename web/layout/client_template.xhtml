@@ -71,36 +71,36 @@
                             </h:commandLink><br />
                         </h:form>
                         <hr />
-                        <h:form id="password_form" style="padding: 0.6em;
+                        <h:form id="change_password_form" style="padding: 0.6em;
                                 background-image: linear-gradient(#eee, #fff, #eee);
                                 border-radius: 0.8em;">       
                             <h1>Change Password</h1>
-                            <h:message for="password_form" errorClass="error" infoClass="info"
+                            <h:message for="change_password_form" errorClass="error" infoClass="info"
                                        warnClass="warn"/>
 
                             <label for="current_password" style="display: inline-block; margin: 0.4em">
                                 Current Password: *</label>
                             <h:inputSecret id="current_password" style="width: 90%" 
-                                           value="#{ncgmsTemplateController.currentPassword}"/>
+                                           value="#{changePasswordController.currentPassword}"/>
                             <h:message for="current_password" errorClass="error" infoClass="info"/>
                             <br />
 
                             <label for="new_password" style="display: inline-block; 
                                    margin: 0.4em">New Password: *</label>
                             <h:inputSecret id="new_password" style="width: 90%" 
-                                           validator="#{ncgmsTemplateController.validatePasswords}" 
-                                           value="#{ncgmsTemplateController.newPassword}"/>
+                                           validator="#{changePasswordController.validatePasswords}" 
+                                           value="#{changePasswordController.newPassword}"/>
                             <h:message for="new_password" errorClass="error" infoClass="info"/>
                             <br />
 
                             <label for="password_again" style="display: inline-block; margin: 0.4em">
                                 Re-enter Password: *</label>
                             <h:inputSecret id="password_again" style="width: 90%" 
-                                           value="#{ncgmsTemplateController.newPasswordAgain}"/>
+                                           value="#{changePasswordController.newPasswordAgain}"/>
                             <h:message for="password_again" errorClass="error" infoClass="info"/>
                             <br />
 
-                            <h:commandLink action="#{ncgmsTemplateController.changePassword}">
+                            <h:commandLink action="#{changePasswordController.changePassword}">
                                 <h:graphicImage library="icons" name="save.png" 
                                                 style="margin: 0 2px -2px 0"/>Save Changes
                                 <f:ajax event="action" execute="@form" render="@all"/>

@@ -9,15 +9,25 @@
         best solid waste collection services but to also minimize the effects 
         caused by poor management on human health and also on the environment.
     </p>
-    <div id="slider">
-        <img id="img" src="/ncgms/resources/images/image1.jpeg" height="200" 
-             style="width: 100%"/>
-        <div id="previous" class="nav" onclick="previous()">
-            <a><img src="/ncgms/resources/images/previous_image.png"/></a>
-        </div>
-        <div id="next" class="nav" onclick="next()">
-            <a><img src="/ncgms/resources/images/next_image.png"/></a>
-        </div>
+    <div id="images">
+        <figure>
+            <img id="img" src="/ncgms/resources/images/image.jpeg"/>
+            <caption>
+                
+            </caption>
+        </figure>
+        <figure>
+            <img id="img" src="/ncgms/resources/images/image_1.jpeg"/>
+            <caption>
+                
+            </caption>
+        </figure>
+        <figure>
+            <img id="img" src="/ncgms/resources/images/image_2.jpeg"/>
+            <caption>
+                
+            </caption>
+        </figure>        
     </div>
     <h1>Our Service  Packages</h1>
     <div id="services">                       
@@ -54,37 +64,6 @@
     </div>
     <script src="/ncgms/js/jquery.js"></script>
     <script type="text/javascript">
-            
-            var imageNo = 1;
-            var noOfImages = 3;
-
-            setInterval(function () {
-                $('#img').fadeOut(10000, next()).fadeIn(10000);
-
-            }, 10000);
-
-            function next() {
-                $(document).ready(function () {
-                    $('#img').attr("src", "/ncgms/resources/images/image" 
-                            + imageNo + ".jpeg");
-                    if (imageNo === noOfImages) {
-                        imageNo = 1;
-                    } else {
-                        imageNo++;
-                    }
-                });
-            }
-
-            function previous() {
-                $(document).ready(function () {
-                    $('#img').attr("src", "/ncgms/resources/images/image"
-                            + imageNo + ".jpeg");
-                    if (imageNo === 1) {
-                        imageNo = noOfImages;
-                    } else {
-                        imageNo--;
-                    }
-                });
-            }
+           
     </script>
 </ui:composition>

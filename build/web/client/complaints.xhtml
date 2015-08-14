@@ -27,14 +27,16 @@
             </p>
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
             <label for="complaint" style="width: 20%; text-align: left">Enter Complaint/Enquiry below: *</label><br />
-            <h:inputTextarea cols="50" rows="2" id="complaint" value="#{clientComplaintController.complaint}" 
+            <h:inputTextarea cols="50" rows="2" id="complaint" 
+                             value="#{clientComplaintController.complaint}" 
                              style="background-color: #eee; border-style: none; 
                              padding: 0.4em"/>
             <h:message for="complaint" errorClass="error" infoClass="info"/>
             <br />
 
             <h:commandLink action="#{clientComplaintController.insertComplaint}">
-                <h:graphicImage library="icons" name="submit.png" style="margin: 0 2px -2px 0"/>Submit Complaint/Enquiry
+                <h:graphicImage library="icons" name="submit.png" 
+                                style="margin: 0 2px -2px 0"/>Submit Complaint/Enquiry
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
         </h:form>
@@ -48,28 +50,34 @@
             <h:outputText class="pages" 
                           value="Page #{clientComplaintController.currentPage} of #{clientComplaintController.noOfPages}"
                           rendered="#{clientComplaintController.complaintList.size() != 0}"/>
-            <h:commandLink action="#{clientComplaintController.previousComplaintPage}" rendered="#{clientComplaintController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+            <h:commandLink action="#{clientComplaintController.previousComplaintPage}" 
+                           rendered="#{clientComplaintController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{clientComplaintController.nextComplaintPage}" rendered="#{clientComplaintController.nextRendered}">
-                <h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>Next
+            <h:commandLink action="#{clientComplaintController.nextComplaintPage}" 
+                           rendered="#{clientComplaintController.nextRendered}">
+                <h:graphicImage library="icons" name="next.png" 
+                                style="margin: 0 2px -2px 0"/>Next
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{clientComplaintController.refreshComplaints}" rendered="#{!clientComplaintController.noComplaintsRendered}">
-                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+            <h:commandLink action="#{clientComplaintController.refreshComplaints}" 
+                           rendered="#{!clientComplaintController.noComplaintsRendered}">
+                <h:graphicImage library="icons" name="refresh.png" 
+                                style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
 
             <h:dataTable value="#{clientComplaintController.viewableComplaintList}" 
                          rendered="#{clientComplaintController.complaintList.size() != 0}"
-                         var="complaintElement">
+                         var="complaintElement" style="border:none">
                 <h:column>
                     <h:form>
                         <h:outputText value="#{complaintElement.realDateAdded} #{complaintElement.complaint}"/><br />
                         <h:dataTable value="#{complaintElement.responseList}" 
                                      rendered="#{complaintElement.responseList.size() != 0}"
-                                     var="responseElement">
+                                     var="responseElement" styleClass="inner_table">
                             <h:column>
                                 <h:outputText value="---#{responseElement.realDateAdded} #{responseElement.response}"/><br />                                    
                             </h:column>
@@ -80,16 +88,21 @@
             <h:outputText class="pages" value="Page #{clientComplaintController.currentPage} of #{clientComplaintController.noOfPages}"
                           rendered="#{clientComplaintController.complaintList.size() != 0}"/>
 
-            <h:commandLink action="#{clientComplaintController.previousComplaintPage}" rendered="#{clientComplaintController.previousRendered}">
-                <h:graphicImage library="icons" name="previous.png" style="margin: 0 2px -2px 0"/>Previous
+            <h:commandLink action="#{clientComplaintController.previousComplaintPage}" 
+                           rendered="#{clientComplaintController.previousRendered}">
+                <h:graphicImage library="icons" name="previous.png" 
+                                style="margin: 0 2px -2px 0"/>Previous
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{clientComplaintController.nextComplaintPage}" rendered="#{clientComplaintController.nextRendered}">
+            <h:commandLink action="#{clientComplaintController.nextComplaintPage}" 
+                           rendered="#{clientComplaintController.nextRendered}">
                 <h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>Next
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{clientComplaintController.refreshComplaints}" rendered="#{!clientComplaintController.noComplaintsRendered}">
-                <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
+            <h:commandLink action="#{clientComplaintController.refreshComplaints}" 
+                           rendered="#{!clientComplaintController.noComplaintsRendered}">
+                <h:graphicImage library="icons" name="refresh.png" 
+                                style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
         </h:form>

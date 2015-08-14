@@ -5,13 +5,14 @@
  */
 package ncgms.admin.controllers;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -22,7 +23,8 @@ import ncgms.entities.Driver;
 import ncgms.daos.DriversFacade;
 import ncgms.daos.SubcountiesFacade;
 import ncgms.daos.TrucksFacade;
-import ncgms.util.SMSSender;
+import ncgms.util.EmailSenderTask;
+import ncgms.util.SMSSenderTask;
 
 /**
  *
@@ -32,6 +34,8 @@ import ncgms.util.SMSSender;
 @SessionScoped
 public class AdminDriverController implements Serializable {
 
+    private ExecutorService executorService;
+
     private String searchBy = null;
     private String searchTerm = null;
     private String[] searchByArray = new String[]{"First Name", "Last Name",
@@ -40,7 +44,6 @@ public class AdminDriverController implements Serializable {
     private Map<Integer, String> subcountyNamesMap = new HashMap<>();
     private List<Driver> driverList = new ArrayList<>();
     private List<Driver> viewableDriverList = new ArrayList<>();
-    private boolean noDriversRendered = false;
 
     /* For navigation */
     private int noOfPages = 0;
@@ -116,13 +119,6 @@ public class AdminDriverController implements Serializable {
             TrucksFacade trucksFacade = new TrucksFacade();
             this.plateNumberList = trucksFacade.populatePlateNumberList();
 
-            // Load subcounty names into map
-            SubcountiesFacade subcountiesFacade = new SubcountiesFacade();
-            //this.subcountyNamesMap = subcountiesFacade.loadSubcountyNamesMap();
-            /*
-             DriversFacade driversFacade = new DriversFacade();
-             this.driverList = driversFacade.loadAllDrivers();
-             */
             // Set the number of pages
             this.noOfPages = this.driverList.size() / 10;
             // Set the last page
@@ -231,14 +227,15 @@ public class AdminDriverController implements Serializable {
         }
 
     }
-    
+
     public void editDriver(Driver driver) {
         driver.setEditable(true);
     }
 
     public void saveDriverChanges(Driver driver) {
         try {
-            // Update
+            this.executorService = Executors.newCachedThreadPool();
+            // Update truck on driver
             driver.getTruck().setPlateNumber(driver.getTruck().getPlateNumber());
             DriversFacade driversFacade = new DriversFacade();
             int result = driversFacade.updateDriver(driver);
@@ -248,6 +245,20 @@ public class AdminDriverController implements Serializable {
                         driver.getFirstName() + " " + driver.getLastName() + " updated.",
                         driver.getFirstName() + " " + driver.getLastName() + " updated.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+                //Inform driver-------------------------------------------------------//
+                String message = null;
+                if (driver.getTruck().getPlateNumber().equals("None")) {
+                    message = "Hello " + driver.getFirstName()
+                            + ", you have been unassigned from your truck. NCGMS Inc.";
+                } else {
+                    message = "Hello " + driver.getFirstName() + ", you have been "
+                            + " assigned to vehicle number: " + driver.getTruck().getPlateNumber()
+                            + ". NCGMS Inc.";
+                }
+                this.executorService.execute(new SMSSenderTask(driver.getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(driver.getEmail(),
+                        "Truck Allocation", message));
+                //--------------------------------------------------------------------//
 
             } else {
                 // Pass
@@ -266,16 +277,22 @@ public class AdminDriverController implements Serializable {
     public void acceptApplication(Driver driver) {
 
         try {
+            this.executorService = Executors.newCachedThreadPool();
             // Create a new DriversFacade
             DriversFacade driversFacade = new DriversFacade(driver);
             int result = driversFacade.approveApplication();
             if (result == 1) {
                 // Set the driver as active
                 driver.setIsActive(1);
-                SMSSender.sendSmsSynchronous(driver.getPhone(), "Hello "
+                // Notify driver----------------------------------------------//
+                String message = "Hello "
                         + driver.getFirstName() + " " + driver.getLastName()
                         + ". Your application has been accepted,"
-                        + " you will be notified of the interview date. Thank you. NCGMS Inc.");
+                        + " you will be notified of the interview date. Thank you. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(driver.getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(driver.getEmail(),
+                        "Driver Job Application", message));
+                //--------------------------------------------------------------//
             } else {
                 // Pass
             }
@@ -285,17 +302,29 @@ public class AdminDriverController implements Serializable {
                     "Could not approve applications. Please contact the system administrator");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
             Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(AdminDriverController.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            this.executorService.shutdown();
         }
     }
 
     public void removeDriver(Driver driver) {
         try {
+            // Check if driver has truck ssigned to them
+            if (driver.getTruck() != null) {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        driver.getFirstName() + " is still assigned to "
+                        + driver.getTruck().getPlateNumber() + ". Unassign the driver"
+                        + " first and try again.",
+                        driver.getFirstName() + " is still assigned to "
+                        + driver.getTruck().getPlateNumber() + ". Unassign the driver"
+                        + " first and try again.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+                return;
+            }
             DriversFacade driversFacade = new DriversFacade(driver);
             int result = driversFacade.removeDriver();
             if (result == 1) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
                         "Driver successfully removed.",
                         "Driver successfully removed.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
@@ -314,7 +343,7 @@ public class AdminDriverController implements Serializable {
             // Initialize driver list
             this.initializeDriverList();
             // Go back to current page
-            for(int i = 1; i < page; i++){
+            for (int i = 1; i < page; i++) {
                 nextDriverPage();
             }
 
@@ -324,6 +353,15 @@ public class AdminDriverController implements Serializable {
 
     public void rejectApplication(Driver driver) {
         this.removeDriver(driver);
+        // Notify driver----------------------------------------------//
+        String message = "Hello "
+                + driver.getFirstName() + " " + driver.getLastName()
+                + ". We would like to inform you that you did not qualify"
+                + " for an interview. Thank you. NCGMS Inc.";
+        this.executorService.execute(new SMSSenderTask(driver.getPhone(), message));
+        this.executorService.execute(new EmailSenderTask(driver.getEmail(),
+                "Driver Job Application", message));
+        //--------------------------------------------------------------//
     }
 
     public void refreshDrivers() {
@@ -362,9 +400,11 @@ public class AdminDriverController implements Serializable {
         } finally {
             if (this.driverList.isEmpty()) {
                 this.initializeDriverList();
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, "No Results",
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "No Results",
                         "No Results");
-                FacesContext.getCurrentInstance().addMessage("drivers_form:search_button", facesMessage);
+                FacesContext.getCurrentInstance().addMessage("drivers_form:search_button",
+                        facesMessage);
             } else {
                 this.searchTerm = null;
                 initializeResultList();
@@ -426,14 +466,6 @@ public class AdminDriverController implements Serializable {
 
     public void setViewableDriverList(List<Driver> viewableDriverList) {
         this.viewableDriverList = viewableDriverList;
-    }
-
-    public boolean isNoDriversRendered() {
-        return driverList.isEmpty();
-    }
-
-    public void setNoDriversRendered(boolean noDriversRendered) {
-        this.noDriversRendered = noDriversRendered;
     }
 
     public int getNoOfPages() {

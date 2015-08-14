@@ -64,7 +64,7 @@
                            rendered="#{clientContainerController.cartRendered}"
                            style="margin: 1em">
                 <h:graphicImage library="icons" name="buy.png" 
-                                style="margin: 0 2px -2px 0"/>Place Order
+                                style="margin: 0 2px -2px 0"/><br />Place Order
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
         </h:form>
@@ -75,19 +75,17 @@
             <h:outputText value="There are no containers." 
                           rendered="#{clientContainerController.containerList.size() == 0}"/>
             <h:dataTable styleClass="containers" value="#{clientContainerController.containerList}"
-                         var="containerElement">
+                         var="containerElement" rendered="#{clientContainerController.containerList.size() != 0}">
                 <h:column>
                     <h:form>
-                        <h:graphicImage library="uploads/images" name="#{containerElement.fileName}" 
-                                        height="100"/><br />
+                        <h:graphicImage library="uploads/images" name="#{containerElement.fileName}"/><br />
                         <h:outputText value="#{containerElement.name}"/><br />
                         <h:outputText value="Price: #{containerElement.realPrice}"/><br />                    
                         <h:outputText value="#{containerElement.noOfContainers} in stock."/><br /> 
                         <h:outputText value="Quantity: "/>
                         <h:inputText  id="quantity" value="#{clientContainerController.quantity}" 
                                       style="margin: 0.1em; padding: 0.1em; height: 20px; 
-                                      width: 2em; border: none;
-                                      background-color: #ccc"/>
+                                      width: 2em; border: solid #ddd 0.1em"/>
                         <h:message for="quantity" errorClass="error" infoClass="info"/><br />
                         <h:commandLink action="#{clientContainerController.addToCart(containerElement)}">
                             <h:graphicImage library="icons" name="add.png" style="margin: 0 2px -2px 0"/>Add To Cart

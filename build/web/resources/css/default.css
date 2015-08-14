@@ -93,8 +93,13 @@ a:active{
 .containers tr{
     display: inline;
     margin: 0 0.8em 0 0.8em;
-    float: left;
+    border-bottom: solid #ddd 0.1em;
 }
+
+.containers td{
+    width: 300px;
+}
+
 #top label{
     font-weight: bold;
 }
@@ -154,18 +159,27 @@ a:active{
     top: 0.1em;
 }
 
-td, tr, th{
+td, tr{
     padding: 0.4em;
-    padding-top: 0;
     margin: 0.4em;
     text-align: left;
 }
 
-table{
-    margin: 0.4em;
+th{
     padding: 0.4em;
+    margin: 0.4em;
+    text-align: center;
+    width: 10%;
+    border-right: solid #eee 0.2em;
+}
+
+
+table{
+    margin: 0.6em auto;
+    padding: 0.6em;
     width: 100%;
     border-collapse: collapse;
+    border: solid #eee 0.2em;
 }
 
 .outer_table table{
@@ -178,6 +192,15 @@ table{
 
 .outer_table > thead > tr{
     border-bottom: solid #aaa 0.2em;
+    background-color: #eee;
+    background-image: -webkit-linear-gradient(top, #eee, #fff, #eee);
+    background-image: -moz-linear-gradient(top, #eee, #fff, #eee);
+    background-image: -o-linear-gradient(top, #eee, #fff, #eee);
+    background-image: linear-gradient(top, #eee, #fff, #eee);
+}
+
+.inner_table{
+    border: none;
 }
 
 #content form{
@@ -197,7 +220,14 @@ table{
 }
 
 img{
-    margin: 0.2em;
+    margin: 0.6em;
+}
+
+figure{
+    margin:0.2em 1em;
+    width: 30%;
+    padding: 0;
+    display: inline-block;
 }
 
 #services > div{
@@ -229,3 +259,6 @@ img{
     font-weight: bold;
 }
 
+h2{
+    color: #045491;
+}

@@ -11,27 +11,61 @@ package ncgms.entities;
  */
 public class LogisticsManager extends User {
 
-    int managerID = 0;
+    //int managerID = 0;
+    String firstName, lastName, email, phoneNo;
 
     public LogisticsManager() {
 
     }
 
-    public LogisticsManager(int managerID, String username, String passwordHash, int isActive) {
-        super(managerID, username, passwordHash, isActive);
+    public LogisticsManager(int userID, String username, String passwordHash,
+            int isActive, String firstName, String lastName, String email, String phoneNo) {
+        super(userID, username, passwordHash, isActive);
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNo = phoneNo;
     }
 
-    public int getManagerID() {
-        return managerID;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setManagerID(int managerID) {
-        this.managerID = managerID;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
-    
-    
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNo() {
+        return phoneNo;
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        this.phoneNo = phoneNo;
+    }
+
     @Override
-    public String toString(){
-        return "Manager ID - " + managerID;
+    public String toString() {
+        return "\nUsername - " + username
+                + "\nManager ID - " + userID
+                + "\nFirst Name - " + firstName
+                + "\nLast Name - " + lastName
+                + "\nEmail - " + email
+                + "\nPhone No - " + phoneNo;
     }
 }
