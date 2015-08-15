@@ -9,13 +9,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import ncgms.entities.Client;
 import ncgms.entities.ContainerOrder;
-import ncgms.entities.Message;
 import ncgms.entities.OrderDetail;
-import ncgms.entities.User;
 
 /**
  *
@@ -123,18 +120,6 @@ public class ContainerOrdersFacade extends AbstractFacade {
                 + " WHERE `ContainerOrders`.`orderID` = \""
                 + containerOrder.getOrderID() + "\"";
         int result = statement.executeUpdate(query);
-        if (result == 1) {
-            // Send the client a message
-            String messageContent = "Order no: " + containerOrder.getOrderID()
-                    + " has been approved, the items will be delivered during "
-                    + " the next garbage collection schedule";
-            // Create message object
-            Message message = new Message(0, messageContent, new Date().getTime(),
-                    0, new User(containerOrder.getClient().getUserID(), null, null, 0));
-            // Insert message
-            MessagesFacade messagesFacade = new MessagesFacade(message);
-            result = messagesFacade.insertMessage();
-        }
         disconnect();
         return result;
     }
@@ -142,21 +127,10 @@ public class ContainerOrdersFacade extends AbstractFacade {
     public int cancelContainerOrder() throws SQLException {
         connect();
         Statement statement = connection.createStatement();
-        String query = "UPDATE `ContainerOrders` SET `status` = \"Canceled\""
+        String query = "UPDATE `ContainerOrders` SET `status` = \"Cancelled\""
                 + " WHERE `ContainerOrders`.`orderID` = \""
                 + containerOrder.getOrderID() + "\"";
         int result = statement.executeUpdate(query);
-        if (result == 1) {
-            // Send the client a message
-            String messageContent = "Order no: " + containerOrder.getOrderID()
-                    + " has been canceled";
-            // Create message object
-            Message message = new Message(0, messageContent, new Date().getTime(),
-                    0, new User(containerOrder.getClient().getUserID(), null, null, 0));
-            // Insert message
-            MessagesFacade messagesFacade = new MessagesFacade(message);
-            result = messagesFacade.insertMessage();
-        }
         disconnect();
         return result;
     }
@@ -167,7 +141,7 @@ public class ContainerOrdersFacade extends AbstractFacade {
         String query = "UPDATE `ContainerOrders` SET `status` = \"Delivered\""
                 + " WHERE `ContainerOrders`.`orderID` = \""
                 + containerOrder.getOrderID() + "\"";
-        int result = statement.executeUpdate(query);
+        int result = statement.executeUpdate(query);System.out.println(query);
         disconnect();
         return result;
     }

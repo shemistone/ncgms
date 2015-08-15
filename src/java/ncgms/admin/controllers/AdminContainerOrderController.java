@@ -213,17 +213,23 @@ public class AdminContainerOrderController implements Serializable {
                 // Set the order as approved
                 containerOrder.setStatus("Approved");
                 // Notify client----------------------------------------------//
-                String message = "Hello "
+                String mobileMessage = "Hello "
+                        + containerOrder.getClient().getFirstName() + " "
+                        + containerOrder.getClient().getLastName()
+                        + ". Your order with Order ID: " + containerOrder.getOrderID()
+                        + " has been approved. The items will be delivered within 1-7"
+                        + " business days. Thank you. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(containerOrder.getClient().getPhone(),
+                        mobileMessage));
+                this.executorService.execute(new EmailSenderTask(containerOrder.getClient().getEmail(),
+                        "Order Approval", mobileMessage));
+                String systemMessage = "Hello "
                         + containerOrder.getClient().getFirstName() + " "
                         + containerOrder.getClient().getLastName()
                         + ". Your order with Order ID: " + containerOrder.getOrderID()
                         + " has been approved. The items will be delivered during the next "
                         + " garbage pick up. Thank you. NCGMS Inc.";
-                this.executorService.execute(new SMSSenderTask(containerOrder.getClient().getPhone(),
-                        message));
-                this.executorService.execute(new EmailSenderTask(containerOrder.getClient().getEmail(),
-                        "Order Approval", message));
-                Message newMessage = new Message(message, new Date().getTime(), 
+                Message newMessage = new Message(systemMessage, new Date().getTime(), 
                        0, new User(containerOrder.getClient().getClientID(), null, null, 1));
                 MessagesFacade messagesFacade = new MessagesFacade(newMessage);
                 messagesFacade.insertMessage();
@@ -252,18 +258,25 @@ public class AdminContainerOrderController implements Serializable {
                         "Order successfully canceled.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                 // Notify client----------------------------------------------//
-                String message = "Hello "
+                String mobileMessage = "Hello "
                         + containerOrder.getClient().getFirstName() + " "
                         + containerOrder.getClient().getLastName()
                         + ". Your order with Order ID: " + containerOrder.getOrderID()
-                        + ") has been canceled, Please contact us for any further follow up."
+                        + " has been canceled, Please contact us for any further follow up."
                         + " Thank you. NCGMS Inc.";
                 this.executorService.execute(new SMSSenderTask(containerOrder.getClient().getPhone(),
-                        message));
+                        mobileMessage));
 
                 this.executorService.execute(new EmailSenderTask(containerOrder.getClient().getEmail(),
-                        "Client Application", message));
-                Message newMessage = new Message(message, new Date().getTime(), 
+                        "Order Cancelation", mobileMessage));
+                
+                String systemMessage = "Hello "
+                        + containerOrder.getClient().getFirstName() + " "
+                        + containerOrder.getClient().getLastName()
+                        + ". Your order with Order ID: " + containerOrder.getOrderID()
+                        + " has been canceled, Please contact us for any further follow up."
+                        + " Thank you. NCGMS Inc.";
+                Message newMessage = new Message(systemMessage, new Date().getTime(), 
                        0, new User(containerOrder.getClient().getClientID(), null, null, 1));
                 MessagesFacade messagesFacade = new MessagesFacade(newMessage);
                 messagesFacade.insertMessage();

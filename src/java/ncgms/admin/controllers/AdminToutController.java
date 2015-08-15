@@ -34,7 +34,7 @@ import ncgms.util.SMSSenderTask;
 public class AdminToutController implements Serializable {
 
     private ExecutorService executorService;
-    
+
     private String searchBy = null;
     private String searchTerm = null;
     private String[] searchByArray = new String[]{"First Name", "Last Name",
@@ -95,7 +95,7 @@ public class AdminToutController implements Serializable {
             }
             /* Initialize the touts */
         } catch (SQLException ex) {
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Could not initialize sanitation worker list.",
                     "Could not initialize sanitation worker list.");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
@@ -220,7 +220,7 @@ public class AdminToutController implements Serializable {
 
     }
 
-     public void editTout(Tout tout) {
+    public void editTout(Tout tout) {
         tout.setEditable(true);
     }
 
@@ -234,7 +234,7 @@ public class AdminToutController implements Serializable {
             if (result == 1) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
                         tout.getFirstName() + " " + tout.getLastName() + " updated.",
-                         tout.getFirstName() + " " + tout.getLastName() + " updated.");
+                        tout.getFirstName() + " " + tout.getLastName() + " updated.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                 //Inform driver-------------------------------------------------------//
                 String message = null;
@@ -263,26 +263,31 @@ public class AdminToutController implements Serializable {
             tout.setEditable(false);
         }
     }
-    
+
     public void refreshTouts() {
         this.initializeToutList();
     }
 
     public void acceptApplication(Tout tout) {
         try {
+            this.executorService = Executors.newCachedThreadPool();
             // Create a new ToutsFacade
             ToutsFacade toutsFacade = new ToutsFacade(tout);
             int result = toutsFacade.approveApplication();
             if (result == 1) {
                 // Set the tout as active
                 tout.setIsActive(1);
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Application accepted.",
+                        "Application accepted.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                 // Notify Sanitation worker------------------------------------//
                 String message = "Hello "
                         + tout.getFirstName() + " " + tout.getLastName()
                         + ". Your application has been accepted,"
                         + " you will be notified of the interview date. Thank you. NCGMS Inc.";
                 this.executorService.execute(new SMSSenderTask(tout.getPhone(), message));
-                this.executorService.execute(new EmailSenderTask(tout.getEmail(), 
+                this.executorService.execute(new EmailSenderTask(tout.getEmail(),
                         "Sanitation worker Application", message));
                 //-------------------------------------------------------------//
             } else {
@@ -299,22 +304,10 @@ public class AdminToutController implements Serializable {
 
     public void removeTout(Tout tout) {
         try {
-            // Check if tout has truck ssigned to them
-            if (tout.getTruck() != null) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        tout.getFirstName() + " is still assigned to "
-                        + tout.getTruck().getPlateNumber() + ". Unassign the sanitation worker "
-                        + " first and try again.",
-                        tout.getFirstName() + " is still assigned to "
-                        + tout.getTruck().getPlateNumber() + ". Unassign the sanitation worker "
-                        + " first and try again.");
-                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-                return;
-            }
             ToutsFacade toutsFacade = new ToutsFacade(tout);
             int result = toutsFacade.removeTout();
             if (result == 1) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
                         "Sanitation Worker successfully removed.",
                         "Sanitation Worker successfully removed.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
@@ -322,7 +315,7 @@ public class AdminToutController implements Serializable {
                 // Pass
             }
         } catch (SQLException ex) {
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Could not remove Sanotation Worker. Please contact the system administrator",
                     "Could not remove Sanotation Worker. Please contact the system administrator");
             FacesContext.getCurrentInstance().addMessage(null, facesMessage);
@@ -333,7 +326,7 @@ public class AdminToutController implements Serializable {
             // Initialize tout list
             this.initializeToutList();
             // Go back to current page
-            for(int i = 1; i < page; i++){
+            for (int i = 1; i < page; i++) {
                 nextToutPage();
             }
 
@@ -342,16 +335,41 @@ public class AdminToutController implements Serializable {
     }
 
     public void rejectApplication(Tout tout) {
-        this.removeTout(tout);
-        // Notify driver----------------------------------------------//
-        String message = "Hello "
-                + tout.getFirstName() + " " + tout.getLastName()
-                + ". We would like to inform you that you did not qualify"
-                + " for an interview. Thank you. NCGMS Inc.";
-        this.executorService.execute(new SMSSenderTask(tout.getPhone(), message));
-        this.executorService.execute(new EmailSenderTask(tout.getEmail(),
-                "Sanitation worker Job Application", message));
-        //--------------------------------------------------------------//
+        try {
+            this.executorService = Executors.newCachedThreadPool();
+            ToutsFacade toutsFacade = new ToutsFacade(tout);
+            int result = toutsFacade.removeTout();
+            if (result == 1) {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Application rejected.",
+                        "Application rejected.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+                // Notify driver----------------------------------------------//
+                String message = "Hello "
+                        + tout.getFirstName() + " " + tout.getLastName()
+                        + ". We would like to inform you that you did not qualify"
+                        + " for an interview. Thank you. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(tout.getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(tout.getEmail(),
+                        "Sanitation worker Job Application", message));
+                //--------------------------------------------------------------//
+            } else {
+                // Pass
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(AdminToutController.class.getName()).log(Level.SEVERE, null, ex);
+        }finally{
+            this.executorService.shutdown();
+            // Get current page
+            int page = this.currentPage;
+            // Initialize tout list
+            this.initializeToutList();
+            // Go back to current page
+            for (int i = 1; i < page; i++) {
+                nextToutPage();
+            }
+        }
     }
 
     public void searchTouts() {
@@ -360,25 +378,25 @@ public class AdminToutController implements Serializable {
 
             switch (this.searchBy) {
                 case "First Name":
-                    this.toutList = toutsFacade.searchDriverByFirstName(searchTerm);
+                    this.toutList = toutsFacade.searchToutByFirstName(searchTerm);
                     break;
                 case "Last Name":
-                    this.toutList = toutsFacade.searchDriverByLastName(searchTerm);
+                    this.toutList = toutsFacade.searchToutByLastName(searchTerm);
                     break;
                 case "Subcounty":
-                    this.toutList = toutsFacade.searchDriverBySubcounty(searchTerm);
+                    this.toutList = toutsFacade.searchToutBySubcounty(searchTerm);
                     break;
                 case "Address":
-                    this.toutList = toutsFacade.searchDriverByAddress(searchTerm);
+                    this.toutList = toutsFacade.searchToutByAddress(searchTerm);
                     break;
                 case "Assigned Truck":
-                    this.toutList = toutsFacade.searchDriverByAssignedTruck(searchTerm);
+                    this.toutList = toutsFacade.searchToutByAssignedTruck(searchTerm);
                     break;
                 case "Phone Number":
-                    this.toutList = toutsFacade.searchDriverByPhoneNumber(searchTerm);
+                    this.toutList = toutsFacade.searchToutByPhoneNumber(searchTerm);
                     break;
                 case "Email":
-                    this.toutList = toutsFacade.searchDriverByEmail(searchTerm);
+                    this.toutList = toutsFacade.searchToutByEmail(searchTerm);
                     break;
             }
         } catch (SQLException ex) {
@@ -386,11 +404,11 @@ public class AdminToutController implements Serializable {
         } finally {
             if (this.toutList.isEmpty()) {
                 this.initializeToutList();
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, "No Results",
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "No Results",
                         "No Results");
                 FacesContext.getCurrentInstance().addMessage("touts_form:search_button", facesMessage);
             } else {
-                this.searchTerm = null;
                 initializeResultList();
             }
         }

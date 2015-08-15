@@ -239,7 +239,6 @@ public class AdminDriverController implements Serializable {
             driver.getTruck().setPlateNumber(driver.getTruck().getPlateNumber());
             DriversFacade driversFacade = new DriversFacade();
             int result = driversFacade.updateDriver(driver);
-            System.out.print(result);
             if (result == 1) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
                         driver.getFirstName() + " " + driver.getLastName() + " updated.",
@@ -284,6 +283,10 @@ public class AdminDriverController implements Serializable {
             if (result == 1) {
                 // Set the driver as active
                 driver.setIsActive(1);
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Application accpeted.",
+                        "Application accepted.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                 // Notify driver----------------------------------------------//
                 String message = "Hello "
                         + driver.getFirstName() + " " + driver.getLastName()
@@ -304,23 +307,19 @@ public class AdminDriverController implements Serializable {
             Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             this.executorService.shutdown();
+            // Get current page
+            int page = this.currentPage;
+            // Initialize driver list
+            this.initializeDriverList();
+            // Go back to current page
+            for (int i = 1; i < page; i++) {
+                nextDriverPage();
+            }
         }
     }
 
     public void removeDriver(Driver driver) {
         try {
-            // Check if driver has truck ssigned to them
-            if (driver.getTruck() != null) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        driver.getFirstName() + " is still assigned to "
-                        + driver.getTruck().getPlateNumber() + ". Unassign the driver"
-                        + " first and try again.",
-                        driver.getFirstName() + " is still assigned to "
-                        + driver.getTruck().getPlateNumber() + ". Unassign the driver"
-                        + " first and try again.");
-                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-                return;
-            }
             DriversFacade driversFacade = new DriversFacade(driver);
             int result = driversFacade.removeDriver();
             if (result == 1) {
@@ -352,16 +351,41 @@ public class AdminDriverController implements Serializable {
     }
 
     public void rejectApplication(Driver driver) {
-        this.removeDriver(driver);
-        // Notify driver----------------------------------------------//
-        String message = "Hello "
-                + driver.getFirstName() + " " + driver.getLastName()
-                + ". We would like to inform you that you did not qualify"
-                + " for an interview. Thank you. NCGMS Inc.";
-        this.executorService.execute(new SMSSenderTask(driver.getPhone(), message));
-        this.executorService.execute(new EmailSenderTask(driver.getEmail(),
-                "Driver Job Application", message));
-        //--------------------------------------------------------------//
+        try {
+            this.executorService = Executors.newCachedThreadPool();
+            DriversFacade driversFacade = new DriversFacade(driver);
+            int result = driversFacade.removeDriver();
+            if (result == 1) {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Application rejected.",
+                        "Application rejected.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+                // Notify driver----------------------------------------------//
+                String message = "Hello "
+                        + driver.getFirstName() + " " + driver.getLastName()
+                        + ". We would like to inform you that you did not qualify"
+                        + " for an interview. Thank you. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(driver.getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(driver.getEmail(),
+                        "Driver Job Application", message));
+                //--------------------------------------------------------------//
+            } else {
+                // Pass
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(AdminDriverController.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            // Get current page
+            int page = this.currentPage;
+            // Initialize driver list
+            this.initializeDriverList();
+            // Go back to current page
+            for (int i = 1; i < page; i++) {
+                nextDriverPage();
+            }
+
+        }
     }
 
     public void refreshDrivers() {
@@ -406,7 +430,6 @@ public class AdminDriverController implements Serializable {
                 FacesContext.getCurrentInstance().addMessage("drivers_form:search_button",
                         facesMessage);
             } else {
-                this.searchTerm = null;
                 initializeResultList();
             }
         }

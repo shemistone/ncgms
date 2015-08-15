@@ -46,7 +46,6 @@ public class AdminTruckController implements Serializable {
     private List<String> modelList = new ArrayList<>();
     private List<Truck> truckList = new ArrayList<>();
     private List<Truck> viewableTruckList = new ArrayList<>();
-    private boolean noTrucksRendered = false;
 
     /* For navigation */
     private int noOfPages = 0;
@@ -57,7 +56,7 @@ public class AdminTruckController implements Serializable {
     /* For navigation */
 
     @Pattern(regexp = "^[A-Z]{3}\\s+[0-9]{3}[A-Z]?$",
-            message = "Plate number format is invalid.")
+            message = "Plate number format is invalid.e.g. KAL 887L")
     private String plateNumber;
     @Pattern(regexp = "^[a-zA-Z\\s]+[a-zA-Z_\\-\\']*[a-zA-Z\\']+$",
             message = "Select truck model.")
@@ -269,27 +268,7 @@ public class AdminTruckController implements Serializable {
 
     public void suspendTruck(Truck truck) {
         try {
-
-            // Check if the truck has any assigned clients, drivers or touts
-            if (!truck.getClientList().isEmpty()) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        "Please unassign this truck from clients, before removing it.",
-                        "Please unassign this truck from clients, before suspending it.");
-                FacesContext.getCurrentInstance().addMessage("trucks_form", facesMessage);
-                return;
-            } else if (!truck.getToutList().isEmpty()) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        "Please unassign this truck from touts, before removing it.",
-                        "Please unassign this truck from touts, before suspending it.");
-                FacesContext.getCurrentInstance().addMessage("trucks_form", facesMessage);
-                return;
-            } else if (truck.getDriver() != null) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        "Please unassign this truck's driver, before removing it.",
-                        "Please unassign this truck's driver, before suspending removing it.");
-                FacesContext.getCurrentInstance().addMessage("trucks_form", facesMessage);
-                return;
-            }
+            this.executorService = Executors.newCachedThreadPool();
             // Create a new TrucksFacade
             TrucksFacade trucksFacade = new TrucksFacade(truck);
             int result = trucksFacade.suspendTruck();
@@ -330,6 +309,7 @@ public class AdminTruckController implements Serializable {
 
     public void unSuspendTruck(Truck truck) {
         try {
+            this.executorService = Executors.newCachedThreadPool();
             // Create a new TrucksFacade
             TrucksFacade trucksFacade = new TrucksFacade(truck);
             int result = trucksFacade.unSuspendTruck();
@@ -371,26 +351,7 @@ public class AdminTruckController implements Serializable {
     public void removeTruck(Truck truck) {
         try {
             this.executorService = Executors.newCachedThreadPool();
-            // Check if the truck has any assigned clients, drivers or touts
-            if (!truck.getClientList().isEmpty()) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        "Please unassign this truck from clients, before removing it.",
-                        "Please unassign this truck from clients, before removing it.");
-                FacesContext.getCurrentInstance().addMessage("trucks_form", facesMessage);
-                return;
-            } else if (!truck.getToutList().isEmpty()) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        "Please unassign this truck from touts, before removing it.",
-                        "Please unassign this truck from touts, before removing it.");
-                FacesContext.getCurrentInstance().addMessage("trucks_form", facesMessage);
-                return;
-            } else if (truck.getDriver() != null) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        "Please unassign this truck's driver, before removing it.",
-                        "Please unassign this truck's driver, before removing it.");
-                FacesContext.getCurrentInstance().addMessage("trucks_form", facesMessage);
-                return;
-            }
+            
             // Create a new TrucksFacade
             TrucksFacade trucksFacade = new TrucksFacade(truck);
             int result = trucksFacade.removeTruck();
@@ -464,7 +425,6 @@ public class AdminTruckController implements Serializable {
                 FacesContext.getCurrentInstance().addMessage("trucks_form:search_button",
                         facesMessage);
             } else {
-                this.searchTerm = null;
                 initializeResultList();
             }
         }
@@ -532,14 +492,6 @@ public class AdminTruckController implements Serializable {
 
     public void setViewableTruckList(List<Truck> viewableTruckList) {
         this.viewableTruckList = viewableTruckList;
-    }
-
-    public boolean isNoTrucksRendered() {
-        return truckList.isEmpty();
-    }
-
-    public void setNoTrucksRendered(boolean noTrucksRendered) {
-        this.noTrucksRendered = noTrucksRendered;
     }
 
     public int getNoOfPages() {

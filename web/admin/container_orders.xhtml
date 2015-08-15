@@ -44,8 +44,7 @@
 
             <h:outputText class="pages" 
                           value="Page #{adminContainerOrderController.currentPage} 
-                          of #{adminContainerOrderController.noOfPages}"
-                          rendered="#{adminContainerOrderController.containerOrderList.size() != 0}"/>
+                          of #{adminContainerOrderController.noOfPages}"/>
             <h:commandLink action="#{adminContainerOrderController.previousContainerOrderPage}" 
                            rendered="#{adminContainerOrderController.previousRendered}">
                 <h:graphicImage library="icons" name="previous.png" 
@@ -53,12 +52,11 @@
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:commandLink action="#{adminContainerOrderController.nextContainerOrderPage}" 
-                           rendered="#{adminContainerOrderController.nextRendered}">
-                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                           rendered="#{adminContainerOrderController.nextRendered}">Next
+                <h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{adminContainerOrderController.refreshContainerOrders}" 
-                           rendered="#{adminContainerOrderController.containerOrderList.size() != 0}">
+            <h:commandLink action="#{adminContainerOrderController.refreshContainerOrders}">
                 <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>

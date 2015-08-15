@@ -48,8 +48,9 @@
                           rendered="#{clientComplaintController.complaintList.size() == 0}"/><br />
 
             <h:outputText class="pages" 
-                          value="Page #{clientComplaintController.currentPage} of #{clientComplaintController.noOfPages}"
-                          rendered="#{clientComplaintController.complaintList.size() != 0}"/>
+                          value="Page #{clientComplaintController.currentPage} 
+                          of #{clientComplaintController.noOfPages}"/>
+            
             <h:commandLink action="#{clientComplaintController.previousComplaintPage}" 
                            rendered="#{clientComplaintController.previousRendered}">
                 <h:graphicImage library="icons" name="previous.png" 
@@ -62,8 +63,7 @@
                                 style="margin: 0 2px -2px 0"/>Next
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{clientComplaintController.refreshComplaints}" 
-                           rendered="#{!clientComplaintController.noComplaintsRendered}">
+            <h:commandLink action="#{clientComplaintController.refreshComplaints}">
                 <h:graphicImage library="icons" name="refresh.png" 
                                 style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>

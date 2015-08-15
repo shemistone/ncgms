@@ -39,8 +39,7 @@
             <h:message for="search_button" errorClass="error" infoClass="info"/><br />
             
             <h:outputText class="pages" value="Page #{clientContainerOrderController.currentPage} 
-                          of #{clientContainerOrderController.noOfPages}"
-                          rendered="#{clientContainerOrderController.containerOrderList.size() != 0}"/>
+                          of #{clientContainerOrderController.noOfPages}"/>
 
             <h:commandLink action="#{clientContainerOrderController.previousContainerOrderPage}" 
                            rendered="#{clientContainerOrderController.previousRendered}">
@@ -52,8 +51,7 @@
                 Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{clientContainerOrderController.refreshContainerOrders}" 
-                           rendered="#{clientContainerOrderController.containerOrderList.size() != 0}">
+            <h:commandLink action="#{clientContainerOrderController.refreshContainerOrders}" >
                 <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>

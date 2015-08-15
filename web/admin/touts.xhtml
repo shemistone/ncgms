@@ -45,8 +45,7 @@
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
             
             <h:outputText class="pages" value="Page #{adminToutController.currentPage} 
-                          of #{adminToutController.noOfPages}"
-                          rendered="#{adminToutController.toutList.size() != 0}"/>
+                          of #{adminToutController.noOfPages}"/>
 
             <h:commandLink action="#{adminToutController.previousToutPage}" 
                            rendered="#{adminToutController.previousRendered}">
@@ -60,8 +59,7 @@
                                 style="margin: 0 2px -2px 0"/>Next
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{adminToutController.refreshTouts}" 
-                           rendered="#{adminToutController.toutList.size() != 0}">
+            <h:commandLink action="#{adminToutController.refreshTouts}">
                 <h:graphicImage library="icons" name="refresh.png" 
                                 style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
@@ -136,9 +134,13 @@
                     <h:outputText value="#{toutElement.email}"/>
                 </h:column>
                 <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="CV" 
+                                      rendered="#{adminToutController.toutList.size() != 0}"/>
+                    </f:facet>
                     <h:outputLink  value="../resources/uploads/cvs/#{toutElement.cvName}">                        
-                        <h:graphicImage library="icons" name="download.png" 
-                                        style="margin: 0 2px -2px 0"/>CV
+                        Link<h:graphicImage library="icons" name="download.png" 
+                                        style="margin: 0 2px -2px 0"/>
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:outputLink>
                 </h:column>

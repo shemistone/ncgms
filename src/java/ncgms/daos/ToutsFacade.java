@@ -166,13 +166,13 @@ public class ToutsFacade extends AbstractFacade {
         this.tout = tout;
     }
 
-    public List<Tout> searchDriverByEmail(String searchTerm) throws SQLException {
+    public List<Tout> searchToutByEmail(String searchTerm) throws SQLException {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Users` INNER JOIN"
-                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
-                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` LEFT JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber`"
                 + "  WHERE `Users`.`userName` != \"admin\" AND `email` = \"" 
                 + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
@@ -201,13 +201,13 @@ public class ToutsFacade extends AbstractFacade {
         return toutList;
     }
 
-    public List<Tout> searchDriverByPhoneNumber(String searchTerm) throws SQLException {
+    public List<Tout> searchToutByPhoneNumber(String searchTerm) throws SQLException {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Users` INNER JOIN"
-                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
-                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` LEFT JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber`"
                 + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `phone` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
@@ -236,13 +236,13 @@ public class ToutsFacade extends AbstractFacade {
         return toutList;
     }
 
-    public List<Tout> searchDriverByAssignedTruck(String searchTerm) throws SQLException {
+    public List<Tout> searchToutByAssignedTruck(String searchTerm) throws SQLException {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Users` INNER JOIN"
-                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
-                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` LEFT JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber`"
                 + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `plateNumber` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
@@ -271,13 +271,13 @@ public class ToutsFacade extends AbstractFacade {
         return toutList;
     }
 
-    public List<Tout> searchDriverByAddress(String searchTerm) throws SQLException {
+    public List<Tout> searchToutByAddress(String searchTerm) throws SQLException {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Users` INNER JOIN"
-                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
-                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` LEFT JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber`"
                 + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `address` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
@@ -306,13 +306,13 @@ public class ToutsFacade extends AbstractFacade {
         return toutList;
     }
 
-    public List<Tout> searchDriverBySubcounty(String searchTerm) throws SQLException {
+    public List<Tout> searchToutBySubcounty(String searchTerm) throws SQLException {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Users` INNER JOIN"
-                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
-                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` LEFT JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber`"
                 + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `subcountyID` = \"" + new SubcountiesFacade().searchSubCountyByName(
                         searchTerm).getSubcountyID() + "\"";
@@ -342,13 +342,13 @@ public class ToutsFacade extends AbstractFacade {
         return toutList;
     }
 
-    public List<Tout> searchDriverByLastName(String searchTerm) throws SQLException {
+    public List<Tout> searchToutByLastName(String searchTerm) throws SQLException {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Users` INNER JOIN"
-                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
-                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` LEFT JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber`"
                 + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `lastName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);
@@ -377,13 +377,13 @@ public class ToutsFacade extends AbstractFacade {
         return toutList;
     }
 
-    public List<Tout> searchDriverByFirstName(String searchTerm) throws SQLException {
+    public List<Tout> searchToutByFirstName(String searchTerm) throws SQLException {
         connect();
         ArrayList<Tout> toutList = new ArrayList<>();
         Statement statement = connection.createStatement();
         String query = "SELECT * FROM `Users` INNER JOIN"
-                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` INNER JOIN "
-                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber"
+                + " `Touts` ON `Users`.`userID` = `Touts`.`toutID` LEFT JOIN "
+                + " `Trucks` ON `Touts`.`plateNumber` = `Trucks`.`plateNumber`"
                 + " WHERE `Users`.`userName` != \"admin\""
                 + " AND `firstName` = \"" + searchTerm + "\"";
         ResultSet resultSet = statement.executeQuery(query);

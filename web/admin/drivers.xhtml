@@ -44,8 +44,7 @@
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>            
             
             <h:outputText class="pages" value="Page #{adminDriverController.currentPage} 
-                          of #{adminDriverController.noOfPages}"
-                          rendered="#{adminDriverController.driverList.size() != 0}"/>
+                          of #{adminDriverController.noOfPages}"/>
 
             <h:commandLink action="#{adminDriverController.previousDriverPage}" 
                            rendered="#{adminDriverController.previousRendered}">
@@ -58,8 +57,7 @@
                 Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{adminDriverController.refreshDrivers}" 
-                           rendered="#{adminDriverController.driverList.size() != 0}">
+            <h:commandLink action="#{adminDriverController.refreshDrivers}">
                 <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
@@ -126,8 +124,11 @@
                     <h:outputText value="#{driverElement.email}"/>
                 </h:column>
                 <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="CV" rendered="#{adminDriverController.driverList.size() != 0}"/>
+                    </f:facet>
                     <h:outputLink  value="../resources/uploads/cvs/#{driverElement.cvName}">
-                        <h:graphicImage library="icons" name="download.png" style="margin: 0 2px -2px 0"/>CV
+                        Link<h:graphicImage library="icons" name="download.png" style="margin: 0 2px -2px 0"/>
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:outputLink>
                 </h:column>

@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -43,7 +45,7 @@ import ncgms.util.SMSSenderTask;
 @RequestScoped
 public class ToutApplicationController implements Serializable {
 
-    private Thread smsThread, emailThread;
+    private ExecutorService executorService;
     private List<String> subcountyList = null;
 
     private Part file;
@@ -117,7 +119,7 @@ public class ToutApplicationController implements Serializable {
     public synchronized void insertTout() {
         
         try {
-
+            this.executorService = Executors.newCachedThreadPool();
             /* Start file upload */
            String cvName = uploadFile();
             /* Finish file upload */
@@ -152,13 +154,13 @@ public class ToutApplicationController implements Serializable {
                         // Notify admin---------------------------------------------//                       
                         String mobileMessage = "Hello admin, you have a new"
                                 + " Sanitation worker application. NCGMS Inc.";
-                        smsThread = new Thread(new SMSSenderTask(new LogisticsManagersFacade().
+                        this.executorService.execute(new SMSSenderTask(new LogisticsManagersFacade().
                                 searchLogisticsManagerByUsername("admin").getPhoneNo(),
                                 mobileMessage));
-                        smsThread.start();
-                        emailThread = new Thread(new EmailSenderTask(email,
-                                "Client Application", mobileMessage));
-                        emailThread.start();
+                        this.executorService.execute(new EmailSenderTask(new LogisticsManagersFacade().
+                                searchLogisticsManagerByUsername("admin").getEmail(),
+                                "Sanitation Worker Application", mobileMessage));
+                        
                         String systemMessage = "Hello admin, you have a new"
                                 + " Sanitation worker application.";
                         User admin = new User(new UsersFacade().loadAdminUserID(),
@@ -172,11 +174,9 @@ public class ToutApplicationController implements Serializable {
                         mobileMessage = "Your application has been successfully received. "
                                 + " You will be notified on the interview date. Thank you"
                                 + ". NCGMS inc";
-                        smsThread = new Thread(new SMSSenderTask(phone, mobileMessage));
-                        smsThread.start();
-                        emailThread = new Thread(new EmailSenderTask(email,
+                        this.executorService.execute(new SMSSenderTask(phone, mobileMessage));
+                        this.executorService.execute(new EmailSenderTask(email,
                                 "Sanitation worker Application", mobileMessage));
-                        emailThread.start();
                         //-------------------------------------------------------//
                         this.address = this.email = this.firstName = this.idNumber
                                 = this.lastName = this.phone = this.subcounty = null;
@@ -298,22 +298,6 @@ public class ToutApplicationController implements Serializable {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public Thread getSmsThread() {
-        return smsThread;
-    }
-
-    public void setSmsThread(Thread smsThread) {
-        this.smsThread = smsThread;
-    }
-
-    public Thread getEmailThread() {
-        return emailThread;
-    }
-
-    public void setEmailThread(Thread emailThread) {
-        this.emailThread = emailThread;
     }
 
 }

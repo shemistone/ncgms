@@ -5,7 +5,6 @@
  */
 package ncgms.daos;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,14 +13,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import ncgms.entities.Client;
 import ncgms.entities.ContainerOrder;
 import ncgms.entities.Invoice;
 import ncgms.entities.Message;
 import ncgms.entities.User;
-import ncgms.util.SMSSender;
+import ncgms.util.EmailSenderTask;
+import ncgms.util.SMSSenderTask;
 
 /**
  * InvoicesFacade
@@ -29,8 +29,10 @@ import ncgms.util.SMSSender;
  * @author root
  */
 public class InvoicesFacade extends AbstractFacade {
-
+    
+    private static final int timeBeforeServiceInterruption = 1296000000; // Fifteen days (in milliseconds)
     private Invoice invoice = new Invoice();
+    private ExecutorService executorService;
 
     public InvoicesFacade() {
     }
@@ -104,6 +106,7 @@ public class InvoicesFacade extends AbstractFacade {
     }
 
     public int createMonthlyInvoicesForAllClients() throws SQLException {
+        this.executorService = Executors.newCachedThreadPool();
         connect();
         int result = 0;
         List<Client> clientList = new ArrayList<>();
@@ -146,31 +149,40 @@ public class InvoicesFacade extends AbstractFacade {
             }
 
             // Create and insert the invoice
-            this.invoice = new Invoice(0, new Date().getTime(), new Date().getTime() + 86400000,
+            this.invoice = new Invoice(0, new Date().getTime(), 
+                    new Date().getTime() + timeBeforeServiceInterruption,
                     0, amountDue, 0, balance, 0, client);
             result = this.insertInvoice();
 
             // Send a message to each client
-            if (result > 0) {
-                String messageContent = "Hello " + new ClientsFacade().searchClientByClientID(
+            if (result == 1) {
+                //Notify client-----------------------------------------------------------//
+                String systemMessage = "Hello " + new ClientsFacade().searchClientByClientID(
+                        client.getUserID()).getFirstName() + " You have received a new monthly bill. "
+                        + " Amount due is KShs: " + invoice.getAmountDue()
+                        + ". Please ensure that you pay before  " + this.invoice.getRealDateDue()
+                        + " to avoid disruption of services. Thank you";
+                Message message = new Message(0, systemMessage, new Date().getTime(),
+                        0, new User(client.getUserID(), null, null, 0));
+                MessagesFacade messagesFacade = new MessagesFacade(message);
+                messagesFacade.insertMessage();
+
+                String mobileMessage = "Hello " + new ClientsFacade().searchClientByClientID(
                         client.getUserID()).getFirstName() + " You have received a new monthly bill. "
                         + " Amount due is KShs: " + invoice.getAmountDue()
                         + ". Please ensure that you pay before  " + this.invoice.getRealDateDue()
                         + " to avoid disruption of services. Thank you for your business support."
                         + " NCGMS Inc.";
-                Message message = new Message(0, messageContent, new Date().getTime(),
-                        0, new User(client.getUserID(), null, null, 0));
-                MessagesFacade messagesFacade = new MessagesFacade(message);
-                result = messagesFacade.insertMessage();
-                try {
-                    // Send an sms to the user
-                    SMSSender.sendSmsSynchronous(
-                            new ClientsFacade().searchClientByClientID(
-                                    message.getUser().getUserID()
-                            ).getPhone(), messageContent);
-                } catch (IOException | InterruptedException ex) {
-                    Logger.getLogger(InvoicesFacade.class.getName()).log(Level.SEVERE, null, ex);
-                }
+
+                // Notify client via sms
+                this.executorService.execute(new SMSSenderTask(new ClientsFacade()
+                        .searchClientByClientID(message.getUser().getUserID())
+                        .getPhone(), mobileMessage));
+                // Notify client via email
+                this.executorService.execute(new EmailSenderTask(new ClientsFacade()
+                        .searchClientByClientID(message.getUser().getUserID())
+                        .getEmail(), "NCGMS Invoice", mobileMessage));
+                //--------------------------------------------------------------//
             } else {
                 // No invoices for last month
             }
@@ -346,10 +358,10 @@ public class InvoicesFacade extends AbstractFacade {
         return invoiceList;
     }
 
-    public int removeInvoice() throws SQLException{
+    public int removeInvoice() throws SQLException {
         connect();
         Statement statement = connection.createStatement();
-        String query = "DELETE FROM `Invoices` WHERE `invoiceID` = \"" 
+        String query = "DELETE FROM `Invoices` WHERE `invoiceID` = \""
                 + this.invoice.getInvoiceID() + "\"";
         int result = statement.executeUpdate(query);
         disconnect();

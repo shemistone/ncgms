@@ -43,8 +43,8 @@
             <h:messages globalOnly="true" errorClass="error" infoClass="info"
                         warnClass="warn"/>
             
-            <h:outputText class="pages" value="Page #{adminInvoiceController.currentPage} of #{adminInvoiceController.noOfPages}"
-                          rendered="#{adminInvoiceController.invoiceList.size() != 0}"/>
+            <h:outputText class="pages" value="Page #{adminInvoiceController.currentPage} 
+                          of #{adminInvoiceController.noOfPages}"/>
 
             <h:commandLink action="#{adminInvoiceController.previousInvoicePage}" 
                            rendered="#{adminInvoiceController.previousRendered}">
@@ -56,8 +56,7 @@
                 Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{adminInvoiceController.refreshInvoices}" 
-                           rendered="#{adminInvoiceController.invoiceList.size()  != 0}">
+            <h:commandLink action="#{adminInvoiceController.refreshInvoices}">
                 <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>

@@ -180,7 +180,8 @@ public class Tout extends User {
 
     @Override
     public String toString() {
-        return "\nFirst name - " + firstName
+        return "\nTout ID - " + toutID
+                + "First name - " + firstName
                 + "\nLast name - " + lastName
                 + "\nAddress - " + address
                 + "\nEmail - " + email

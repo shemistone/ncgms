@@ -16,7 +16,6 @@ import javax.faces.bean.SessionScoped;
 import ncgms.entities.Message;
 import ncgms.entities.User;
 import ncgms.daos.MessagesFacade;
-import ncgms.daos.UsersFacade;
 
 /**
  *
@@ -59,7 +58,7 @@ public class MessageController implements Serializable {
                 user = new User();
             }
 
-            // Create a new Message MessagesFacade for loading messages
+            // Create a new MessagesFacade for loading messages
             Message message = new Message();
             message.setUser(user);
             MessagesFacade messagesFacade = new MessagesFacade(message);

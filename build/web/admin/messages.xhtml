@@ -27,8 +27,7 @@
 
             <h:outputText class="pages" 
                           value="Page #{messageController.currentPage} 
-                          of #{messageController.noOfPages}"
-                          rendered="#{messageController.messageList.size() != 0}"/>
+                          of #{messageController.noOfPages}"/>
 
             <h:commandLink action="#{messageController.previousMessagePage}" 
                            rendered="#{messageController.previousRendered}">
@@ -42,8 +41,7 @@
                                     style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{messageController.refreshMessages}" 
-                           rendered="#{messageController.messageList.size() != 0}">
+            <h:commandLink action="#{messageController.refreshMessages}">
                 <h:graphicImage library="icons" name="refresh.png" 
                                 style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>

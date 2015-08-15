@@ -96,11 +96,13 @@
                            validator="#{clientApplicationController.validatePasswords}" 
                            value="#{clientApplicationController.passwordAgain}"/>
             <h:message for="password_again" errorClass="error" infoClass="info"/>
+            <br />
             
             <hr />
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
-
-            <h:commandButton value="Submit Application" 
+            <br />
+            <label for="submit_application"></label>
+            <h:commandButton id="submit_application" value="Submit Application" 
                              action="#{clientApplicationController.insertClient}">
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandButton>

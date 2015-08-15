@@ -40,7 +40,7 @@ public class UsersFacade extends AbstractFacade {
         connect();
         Statement statement = connection.createStatement();
         String query = "UPDATE `Users` SET `isActive` = \"" + 0
-                + "\" WHERE `username` = \"" + user.getUsername() + "\"";
+                + "\" WHERE `username` = \"" + this.user.getUsername() + "\"";
         int result = statement.executeUpdate(query);
         disconnect();
         return result;

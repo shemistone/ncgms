@@ -261,10 +261,10 @@ public class LogInLogOutController implements Serializable {
                     usersFacade.deactivateUser();
                     FacesMessage facesMessage = new FacesMessage(
                             FacesMessage.SEVERITY_ERROR,
-                            "Your account has been blocked. Use the"
+                            "Your account has been blocked due to 3 unsuccessful. Use the"
                             + " \"Forgot Password?\" link to unblock it.",
-                            "Your account has been blocked. Use the "
-                            + "\"Forgot Password?\" link to unblock it.");
+                            "Your account has been blocked due to 3 unsuccessful. Use the "
+                            + "\"<em>Forgot Password?</em>\" link to unblock it.");
                     FacesContext.getCurrentInstance().addMessage(
                             null,
                             facesMessage);

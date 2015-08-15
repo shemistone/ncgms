@@ -257,11 +257,12 @@ public class AdminInvoiceController implements Serializable {
                     // Notify client-------------------------------------------//
                     String message = "Hello " + invoice.getClient().getFirstName()
                             + ", Your invoice with invoice ID: " + invoice.getInvoiceID()
-                            + " has been credited with KShs: " + invoice.getAmountPaid();
+                            + " has been credited with KShs: " + invoice.getAmountPaid()
+                            + ". NCGMS Inc.";
                     this.executorService.execute(new SMSSenderTask(invoice.getClient().getPhone(),
                             message));
                     this.executorService.execute(new EmailSenderTask(invoice.getClient().getEmail(),
-                            "Invoice", message));
+                            "Payment Confirmation", message));
                     //---------------------------------------------------------//
                 } else {
                     // Pass

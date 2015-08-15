@@ -40,8 +40,7 @@
             
             <h:outputText class="pages" 
                           value="Page #{clientInvoiceController.currentPage} 
-                          of #{clientInvoiceController.noOfPages}"
-                          rendered="#{clientInvoiceController.invoiceList.size() != 0}"/>
+                          of #{clientInvoiceController.noOfPages}"/>
 
             <h:commandLink action="#{clientInvoiceController.previousInvoicePage}" 
                            rendered="#{clientInvoiceController.previousRendered}">
@@ -53,8 +52,7 @@
                 Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{clientInvoiceController.refreshInvoices}" 
-                           rendered="#{clientInvoiceController.invoiceList.size() != 0}">
+            <h:commandLink action="#{clientInvoiceController.refreshInvoices}" >
                 <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>

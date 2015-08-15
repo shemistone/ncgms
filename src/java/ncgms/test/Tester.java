@@ -115,6 +115,7 @@ public class Tester {
                             plotName, dateAdded, idNumber, 0, subcounty, null, packageObject);
                     ClientsFacade clientsFacade = new ClientsFacade(client);
                     clientsFacade.insertClient();
+                    System.out.print(client);
                 } else if (i >= 100 && i < 120) {
                     // Create and insert driver
                     Driver driver = new Driver(usersFacade.loadUserID(), username, passwordHash, 0,
@@ -164,7 +165,7 @@ public class Tester {
 
     public static void insertAdmin() {
         try {
-            LogisticsManager lm = new LogisticsManager(0, "admin", PasswordHasher.createHash("burton2015"),
+            LogisticsManager lm = new LogisticsManager(0, "admin", PasswordHasher.createHash("admin2015"),
                     1, "Burton", "Muchemi", "shemistone@gmail.com", "0721868821");
             UsersFacade usersFacade = new UsersFacade(lm);
             usersFacade.insertUser();

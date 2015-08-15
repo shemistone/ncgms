@@ -76,7 +76,6 @@ public class ForgotPasswordController {
                 this.client = clientsFacade.searchClientByEmail(email).get(0);
             }
             this.lm = logisticsManagersFacade.searchLogisticsManagerByEmail(email);
-
             if (client == null && lm == null) {
                 FacesMessage facesMessage = new FacesMessage(
                         FacesMessage.SEVERITY_ERROR,
@@ -113,9 +112,9 @@ public class ForgotPasswordController {
             // Send verification to client----------------------------------------//
             String code = "<h3>Verification Code: " + String.valueOf(verificationCode)
                     + ".</h3> This code will expire in five minutes time. Any previously"
-                    + " sent verification code have expired. NCGMS Inc";
+                    + " sent verification codes are no longer valid. NCGMS Inc";
             this.executorService.execute(new EmailSenderTask(email,
-                    "NCGMS Activation Code.", code));
+                    "NCGMS Veirification Code.", code));
             FacesMessage facesMessage = new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "We have sent the activation code to your email."
@@ -129,7 +128,7 @@ public class ForgotPasswordController {
             thread.start();
             //-----------------------------------------------------------------//
         } else {
-
+            // Pass
         }
     }
 
@@ -141,8 +140,8 @@ public class ForgotPasswordController {
                 if (verificationCode == -1) {
                     FacesMessage facesMessage = new FacesMessage(
                             FacesMessage.SEVERITY_ERROR,
-                            "Expired Verification Code. Try another code.",
-                            "Expired Verification Code. Try another code.");
+                            "Expired Verification Code. Send another code.",
+                            "Expired Verification Code. Send another code.");
                     FacesContext.getCurrentInstance().addMessage(
                             "change_password_form:user_verification_code", facesMessage);
                     return;
@@ -182,14 +181,16 @@ public class ForgotPasswordController {
             } catch (SQLException ex) {
                 Logger.getLogger(ForgotPasswordController.class.getName()).
                         log(Level.SEVERE, null, ex);
+            }finally{
+                this.client = null;
             }
         } else if (this.lm != null) {
             try {
                 if (verificationCode == -1) {
                     FacesMessage facesMessage = new FacesMessage(
                             FacesMessage.SEVERITY_ERROR,
-                            "Expired Verification Code. Try another code.",
-                            "ExpiredVerification Code. Try another code.");
+                            "Expired Verification Code. Send another code.",
+                            "ExpiredVerification Code. Send another code.");
                     FacesContext.getCurrentInstance().addMessage(
                             "change_password_form:user_verification_code", facesMessage);
                     return;
@@ -230,6 +231,8 @@ public class ForgotPasswordController {
             } catch (SQLException ex) {
                 Logger.getLogger(ForgotPasswordController.class.getName()).
                         log(Level.SEVERE, null, ex);
+            }finally{
+                this.lm = null;
             }
         } else {
             FacesMessage facesMessage = new FacesMessage(

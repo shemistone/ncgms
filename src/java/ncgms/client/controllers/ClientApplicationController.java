@@ -229,9 +229,10 @@ public class ClientApplicationController implements Serializable {
                                 searchLogisticsManagerByUsername("admin").getPhoneNo(),
                                 mobileMessage));
                      
-                        this.executorService.execute(new EmailSenderTask(email,
+                        this.executorService.execute(new EmailSenderTask(
+                                new LogisticsManagersFacade().searchLogisticsManagerByUsername("admin").getEmail(),
                                 "Client Application", mobileMessage));
-
+                        
                         String systemMessage = "Hello admin, you have a new"
                                 + " client application.";
                         User admin = new User(new UsersFacade().loadAdminUserID(),

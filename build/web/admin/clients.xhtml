@@ -22,9 +22,9 @@
         <!--Clients Form-->
         <h:form id="clients_form">       
             <h1>Clients</h1>
-
             <h:outputText value="You have no Clients" 
-                          rendered="#{adminClientController.clientList.size() == 0}"/><br />  
+                          rendered="#{adminClientController.clientList.size() == 0}"/>
+            <br />  
 
             <h:outputLabel for="search" value="Search by:" 
                            rendered="#{adminClientController.clientList.size() != 0}"/>
@@ -43,8 +43,8 @@
 
             <h:messages globalOnly="true" errorClass="error" infoClass="info"/>
 
-            <h:outputText class="pages"  value="Page #{adminClientController.currentPage} of #{adminClientController.noOfPages}"
-                          rendered="#{adminClientController.clientList.size() != 0}"/>
+            <h:outputText class="pages"  value="Page #{adminClientController.currentPage} 
+                          of #{adminClientController.noOfPages}"/>
 
             <h:commandLink action="#{adminClientController.previousClientPage}" 
                            rendered="#{adminClientController.previousRendered}">
@@ -52,12 +52,11 @@
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
             <h:commandLink action="#{adminClientController.nextClientPage}" 
-                           rendered="#{adminClientController.nextRendered}">
-                Next<h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
+                           rendered="#{adminClientController.nextRendered}">Next
+                <h:graphicImage library="icons" name="next.png" style="margin: 0 2px -2px 0"/>
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
-            <h:commandLink action="#{adminClientController.refreshClients}" 
-                           rendered="#{adminClientController.clientList.size() != 0}">
+            <h:commandLink action="#{adminClientController.refreshClients}">
                 <h:graphicImage library="icons" name="refresh.png" style="margin: 0 2px -2px 0"/>Refresh
                 <f:ajax event="action" execute="@form" render="@all"/>
             </h:commandLink>
@@ -139,16 +138,14 @@
                     </h:commandLink>
                     <h:commandLink action="#{adminClientController.acceptAppliaction(clientElement)}" 
                                    rendered="#{clientElement.isActive != 1}">
-                        <h:graphicImage library="icons" name="accept.png" style="margin: 0 2px -2px 0"/>
-                        Accept
+                        <h:graphicImage library="icons" name="accept.png" style="margin: 0 2px -2px 0"/>Accept
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink>                   
                 </h:column> 
                 <h:column>
                     <h:commandLink action="#{adminClientController.rejectApplication(clientElement)}" 
                                    rendered="#{clientElement.isActive != 1}">
-                        <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>
-                        Reject
+                        <h:graphicImage library="icons" name="delete.png" style="margin: 0 2px -2px 0"/>Reject
                         <f:ajax event="action" execute="@form" render="@all"/>
                     </h:commandLink><br />
                     <h:commandLink action="#{adminClientController.removeClient(clientElement)}" 

@@ -148,8 +148,8 @@ public class ClientContainerController implements Serializable {
             int containerOrderResult = containersOrdersFacade.insertContainerOrder();
             if (containerOrderResult == 1) {
                 FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
-                        "Your order has been received. You will be notified about your items delivery.",
-                        "Your order has been received. You will be notified about your items delivery.");
+                        "Your order has been received. You will be contacted to confirm your order.",
+                        "Your order has been received. You will be contacted to confirm your order.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                 noOfContainers = 0;
                 orderDetailList.clear();

@@ -8,9 +8,7 @@ package ncgms.admin.controllers;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -231,6 +229,10 @@ public class AdminClientController implements Serializable {
             if (result == 1) {
                 // Set the client as active
                 client.setIsActive(1);
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Application accepted.",
+                        "Application accepted.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
                 // Notify client----------------------------------------------//
                 String message = "Hello "
                         + client.getFirstName() + " " + client.getLastName()
@@ -256,18 +258,6 @@ public class AdminClientController implements Serializable {
 
     public void removeClient(Client client) {
         try {
-            // Check if client has truck ssigned to them
-            if (client.getTruck() != null) {
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        client.getPlotName() + " is still assigned to "
-                        + client.getTruck().getPlateNumber() + ". Unassign the client"
-                        + " first and try again.",
-                        client.getPlotName() + " is still assigned to "
-                        + client.getTruck().getPlateNumber() + ". Unassign the client"
-                        + " first and try again.");
-                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-                return;
-            }
             this.executorService = Executors.newCachedThreadPool();
             ClientsFacade clientsFacade = new ClientsFacade(client);
             int result = clientsFacade.removeClient();
@@ -276,11 +266,14 @@ public class AdminClientController implements Serializable {
                         "Client successfully removed.",
                         "Client successfully removed.");
                 FacesContext.getCurrentInstance().addMessage(null, facesMessage);
-
+                //Notify client-------------------------------------------------//
                 String message = "Hello " + client.getFirstName() + ", your account has been"
                         + " permanently deactivated. NCGMS Inc.";
                 this.executorService.execute(new SMSSenderTask(client.getPhone(),
                         message));
+                this.executorService.execute(new EmailSenderTask(client.getEmail(),
+                        "Account Deactivation", message));
+                //--------------------------------------------------------------//
             } else {
                 // Pass
             }
@@ -306,16 +299,41 @@ public class AdminClientController implements Serializable {
     }
 
     public void rejectApplication(Client client) {
-        this.removeClient(client);
-        // Notify client----------------------------------------------//
-        String message = "Hello "
-                + client.getFirstName() + " " + client.getLastName()
-                + ". We would like to inform you that your application has been decline"
-                + ". Please contact us for further information. Thank you. NCGMS Inc.";
-        this.executorService.execute(new SMSSenderTask(client.getPhone(), message));
-        this.executorService.execute(new EmailSenderTask(client.getEmail(),
-                "Garbage Collection Application", message));
-        //--------------------------------------------------------------//
+        try {
+            this.executorService = Executors.newCachedThreadPool();
+            ClientsFacade clientsFacade = new ClientsFacade(client);
+            int result = clientsFacade.removeClient();
+            if (result == 1) {
+                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Application rejected.",
+                        "Application rejected.");
+                FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+                // Notify client----------------------------------------------//
+                String message = "Hello "
+                        + client.getFirstName() + " " + client.getLastName()
+                        + ". We would like to inform you that your application has been declined"
+                        + ". Please contact us for further information. Thank you. NCGMS Inc.";
+                this.executorService.execute(new SMSSenderTask(client.getPhone(), message));
+                this.executorService.execute(new EmailSenderTask(client.getEmail(),
+                        "Client Application", message));
+                //--------------------------------------------------------------//
+            } else {
+                // Pass
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(AdminClientController.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            executorService.shutdown();
+            // Get current page
+            int page = this.currentPage;
+            // Initialize client list
+            this.initializeClientList();
+            // Go back to current page
+            for (int i = 1; i < page; i++) {
+                nextClientPage();
+            }
+        }
     }
 
     public void searchClients() {
@@ -359,7 +377,6 @@ public class AdminClientController implements Serializable {
                 FacesContext.getCurrentInstance().addMessage("clients_form:search_button",
                         facesMessage);
             } else {
-                //this.searchTerm = null;
                 initializeResultList();
             }
         }
@@ -431,15 +448,7 @@ public class AdminClientController implements Serializable {
     public void setPlateNumberList(List<String> plateNumberList) {
         this.plateNumberList = plateNumberList;
     }
-/*
-    public Map<Integer, String> getSubcountyNamesMap() {
-        return subcountyNamesMap;
-    }
 
-    public void setSubcountyNamesMap(Map<Integer, String> subcountyNamesMap) {
-        this.subcountyNamesMap = subcountyNamesMap;
-    }
-*/
     public List<Client> getClientList() {
         return clientList;
     }

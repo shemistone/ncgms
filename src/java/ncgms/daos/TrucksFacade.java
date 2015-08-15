@@ -174,7 +174,7 @@ public class TrucksFacade extends AbstractFacade {
         for (Truck newTruck : truckList) {
             // Create a client and set plateNumber
             Client client = new Client();
-            client.getTruck().setPlateNumber(newTruck.getPlateNumber());
+            client.setTruck(newTruck);
 
             // Select all the clients served by this truck
             ClientsFacade clientsFacade = new ClientsFacade(client);
